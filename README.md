@@ -1,5 +1,10 @@
-# Anpassungen nach der Installation
+# tuxedo.sh
+
+Anpassungen nach der Installation / Adjustments after installation
+
 _(English version below)_
+
+## Anpassungen nach der Installation
 
 Wir haben uns absichtlich dafür entschieden, keine TUXEDO Installations-Images anzubieten!
 Mit Installations-Images von uns wären Sie immer auf unsere Images angewiesen, also von uns "abhängig", was dem Linux-Gedanken widersprechen würde!
@@ -25,7 +30,7 @@ Für andere Distris kann z.B. nur der Treiber als .deb oder .rpm Paket verwendet
 Das Script fügt auch unser Repository mit der aktuellen Version unseres hauseigenen Treibers (Tuxedo-wmi) sowie weitere nützliche Pakete hinzu. So kann alles automatisch aktuell gehalten werden.
 
 
-# Adjustments after installation
+## Adjustments after installation
 
 We have deliberately decided against offering TUXEDO installation images. With such images you would always be “dependent” on us, which would contradict the Linux idea. The maintenance of such images would also require a significant effort, and they could never be as up-to-date and complete as the actual servers of the Linux distributions. So we rather offer installation support, manuals, and driver packages. This way you can adjust you individual installation the same way we would.
 
