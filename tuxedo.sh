@@ -6,7 +6,7 @@
 APT_CACHE_HOSTS="192.168.178.107 192.168.23.231"
 APT_CACHE_PORT=3142
 # additional packages that should be installed
-PACKAGES="cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl classicmenu-indicator indicator-keylock unsettings gstreamer1.0-libav"
+PACKAGES="cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl indicator-keylock libgtkglext1 unsettings gstreamer1.0-libav"
 
 
 error=0
@@ -18,13 +18,18 @@ lsb_release="$(lsb_release -sr)"   # e.g. '13.04', '15', '12.3'
 lsb_codename="$(lsb_release -sc)"  # e.g. 'raring', 'olivia', 'Dartmouth'
 product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/product_name" | tr ' ,/-' '_')" # e.g. 'U931'
 case $product in
-Skylake*) product="U931";;
-INFINITYBOOK13V2) product="U931";;
-InfinityBook13V3) product="U931";;
-InfinityBook15*) product="U931";;
-U953) product="U931";;
-P7xxDM*)="U931";;
-*) product=$product;;
+U931) product="U931" && grubakt="NOGRUB";;
+U953) product="U931" && grubakt="NOGRUB";;
+INFINITYBOOK13V2) product="U931" && grubakt="NOGRUB";;
+InfinityBook13V3) product="U931" && grubakt="NOGRUB";;
+InfinityBook15) product="U931" && grubakt="NOGRUB";;
+Skylake_Platform) product="U931" && grubakt="NOGRUB";;
+P65_67RS*) grubakt="02GRUB";;
+P65_67RP*) grubakt="02GRUB";;
+P65xRP) grubakt="02GRUB";;
+P67xRP) grubakt="02GRUB";;
+P7xxDM*) grubakt="NOGRUB";;
+*) echo "nichts" >/dev/null;;
 esac
 
 cd $(dirname $0)
@@ -79,6 +84,10 @@ has_skylake_cpu() {
 	lspci -nd 8086: | grep -q '19[01][048cf]'
 }
 
+has_kabylake_cpu() {
+         [ "$(cat /proc/cpuinfo | grep -i "model name" | awk -F"-" '{print $2}' | head -1 | cut -c1)" = "7" ]
+}
+
 has_fingerprint_reader() {
 	[ -x "$(which lsusb)" ] || $install_cmd usbutils
 	# 0483 ... UPEK
@@ -107,21 +116,31 @@ pkg_is_installed() {
 	esac
 }
 
-
 task_grub() {
 	case "$lsb_dist_id" in
 		Ubuntu|LinuxMint|elementary*)
 			local default_grub=/etc/default/grub
-			if [ ! $product == "U931" ]; then
-			if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor' "$default_grub"; then
-			sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
-			fi
-			fi
-			if has_nvidia_gpu; then
-				sed -i '/^GRUB_CMDLINE_LINUX=/ s/nomodeset//' $default_grub
-			fi
-			update-grub
-			;;
+	    if [ ! $grubakt == "NOGRUB" ]; then
+            if [ $grubakt == "01GRUB" ]; then
+            if ! grep -q 'acpi_osi=Linux acpi_backlight=vendor' "$default_grub"; then
+            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi=Linux acpi_backlight=vendor"/' $default_grub
+            fi
+            elif [ $grubakt == "02GRUB" ]; then
+            if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop' "$default_grub"; then
+            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
+            fi
+            else
+            if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor' "$default_grub"; then
+            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
+            fi
+            fi
+            fi
+            if has_nvidia_gpu; then
+                sed -i '/^GRUB_CMDLINE_LINUX=/ s/nomodeset//' $default_grub
+            fi
+            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT.*/,1 aGRUB_GFXPAYLOAD_LINUX=1920*1080' $default_grub
+            update-grub
+            ;;
 		openSUSE*|SUSE*)
 			local default_grub=/etc/default/grub
 			if [ ! $product == "U931" ]; then
@@ -178,7 +197,9 @@ task_nvidia() {
 			elif [ $lsb_release == "15.10" ]; then
 				$install_cmd nvidia-352 mesa-utils
 			elif [ $lsb_release == "16.04" ]; then
-                                $install_cmd nvidia-370 mesa-utils nvidia-prime 
+                                $install_cmd nvidia-370 mesa-utils nvidia-prime
+            elif [ $lsb_release == "16.10" ]; then
+                                $install_cmd nvidia-370 mesa-utils nvidia-prime                    
 			elif [ $lsb_release == "17.2" ]; then
                                 if ! has_skylake_cpu; then
                                 $install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
@@ -914,7 +935,8 @@ task_install_kernel() {
 				precise|maya) $install_cmd linux-generic-lts-raring ;;
 				qiana) $install_cmd linux-generic-lts-vivid ;;
 				trusty|rafaela|rosa) $install_cmd linux-generic-lts-wily ;;
-				xenial) $install_cmd linux-image-4.7.4-040704-generic linux-headers-4.7.4-040704-generic linux-headers-4.7.4-040704 ;;
+				xenial) $install_cmd linux-image-4.9.0-040900-generic linux-headers-4.9.0-040900-generic linux-headers-4.9.0-040900;;
+				yakkety) $install_cmd linux-image-4.9.0-040900-generic linux-headers-4.9.0-040900-generic linux-headers-4.9.0-040900;;
 				*) $install_cmd linux-generic ;;
 			esac
 			;;
@@ -946,7 +968,7 @@ task_install_kernel_test() {
                                 precise|maya) pkg_is_installed linux-generic-lts-raring || return 1 ;;
                                 qiana) pkg_is_installed linux-generic-lts-vivid || return 1 ;;
 				trusty|rafaela|rosa) pkg_is_installed linux-generic-lts-wily || return 1;;
-				xenial) pkg_is_installed linux-image-4.7.4-040704-generic;;
+				xenial) pkg_is_installed linux-image-4.8.6-040806-generic;;
                                 *) pkg_is_installed linux-generic || return 1 ;;
                         esac
 			;;
@@ -991,22 +1013,42 @@ task_software() {
                         sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
                         fi
 			apt-get -y remove unity-webapps-common app-install-data-partner
-			wget https://www.tuxedocomputers.com/support/iwlwifi-4.2.tar.gz
-			tar xvzf iwlwifi-4.2.tar.gz
-			cd iwlwifi-4.2
-			cp iwlwifi*.ucode /lib/firmware
-			cd ..
-			rm -rf iwlwifi-4.2*
-			if [ $lsb_release == "16.04" ]; then
-                wget http://www.tuxedocomputers.com/support/iwlwifi-3160-17.ucode
-                wget http://www.tuxedocomputers.com/support/iwlwifi-8000C-19.ucode
-                wget http://www.tuxedocomputers.com/support/iwlwifi-8000C-20.ucode
-                wget http://www.tuxedocomputers.com/support/iwlwifi-8000C-21.ucode
-                cp iwlwifi*.ucode /lib/firmware/
-                rm -rf iwlwifi-*
-            fi
+			wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
+			wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
+            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
+            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
+            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
+            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
+            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
+            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
+            cp iwlwifi*.ucode /lib/firmware/
+            rm -rf iwlwifi-*
+            wget http://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
+            wget http://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin
+            wget http://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin
+            mkdir /lib/firmware/i915
+            cp kbl*.bin /lib/firmware/i915/
+            cp skl*.bin /lib/firmware/i915
+            ln -sf /lib/firmware/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1.bin
+            ln -sf /lib/firmware/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1.bin
+            ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
+            rm -rf kbl*.bin
+            rm -rf skl*.bin
+            if pkg_is_installed lightdm; then
+            if [ $lsb_release == "16.04" ]; then
+                        wget http://www.tuxedocomputers.com/support/dpms-disable
+                        sh dpms-disable && rm dpms-disable
+                        fi
+            if [ $lsb_release == "16.10" ]; then
+                        wget http://www.tuxedocomputers.com/support/dpms-disable
+                        sh dpms-disable && rm dpms-disable
+                        fi
+            fi           
 			if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
 			cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
+			fi
+			if pkg_is_installed ubuntu-desktop; then
+			$install_cmd classicmenu-indicator
 			fi
 			;;
 		SUSE*)
