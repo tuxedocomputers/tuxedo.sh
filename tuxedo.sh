@@ -1,12 +1,12 @@
 #!/bin/bash
 #
 # Author: TUXEDO Computers GmbH <tux@tuxedocomputers.com>
-# Version: 3.41 - !edit Eric Kranich
+# Version: 3.41 - !edit Eric Kranich # add zram-config rpl
 
 APT_CACHE_HOSTS="192.168.178.107 192.168.23.231"
 APT_CACHE_PORT=3142
 # additional packages that should be installed
-PACKAGES="zram-config cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl indicator-keylock libgtkglext1 unsettings gstreamer1.0-libav linssid"
+PACKAGES="zram-config rpl cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl indicator-keylock libgtkglext1 unsettings gstreamer1.0-libav linssid"
 
 
 error=0
