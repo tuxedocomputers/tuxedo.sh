@@ -84,7 +84,8 @@ sudo cp /usr/share/notify-osd/icons/Humanity/scalable/status/notification-displa
 ###reglage Luminosité
 sudo apt-get -f install -yqq rpl;
 sudo rpl 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash acpi_osi=Linux acpi_backlight=vendor"' 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"' /etc/default/grub;
-sudo rpl 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"' 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash acpi_osi=Linux acpi_backlight=vendor"' /etc/default/grub;
+sudo rpl 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"' 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"' /etc/default/grub;
+#sudo rpl 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"' 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash acpi_osi=Linux acpi_backlight=vendor"' /etc/default/grub;
 ## mode vga basic
 ## sudo rpl 'GRUB_CMDLINE_LINUX="nomodeset"' 'GRUB_CMDLINE_LINUX=""' /etc/default/grub;
 ## sudo rpl 'GRUB_CMDLINE_LINUX=""' 'GRUB_CMDLINE_LINUX="nomodeset"' /etc/default/grub;
