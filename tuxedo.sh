@@ -30,7 +30,8 @@ P65xRP) grubakt="02GRUB";;
 P67xRP) grubakt="02GRUB";;
 P65xH*) grubakt="02GRUB";;
 P65_P67H*) grubakt="02GRUB";;
-P7xxDM*) grubakt="NOGRUB";;
+P7xxDM*) grubakt="01GRUB";;
+P775DM3*) grubakt="01GRUB";;
 *) echo "nichts" >/dev/null;;
 esac
 
@@ -199,9 +200,9 @@ task_nvidia() {
 			elif [ $lsb_release == "15.10" ]; then
 				$install_cmd nvidia-352 mesa-utils
 			elif [ $lsb_release == "16.04" ]; then
-                                $install_cmd nvidia-375 mesa-utils nvidia-prime
+                                $install_cmd nvidia-370 mesa-utils nvidia-prime
             elif [ $lsb_release == "16.10" ]; then
-                                $install_cmd nvidia-375 mesa-utils nvidia-prime                    
+                                $install_cmd nvidia-370 mesa-utils nvidia-prime                    
 			elif [ $lsb_release == "17.2" ]; then
                                 if ! has_skylake_cpu; then
                                 $install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
@@ -265,7 +266,7 @@ task_nvidia_test() {
                                 true
                                 fi
 			else
-			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-375
+			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370
 			#if [ $lsb_release == "15.04" ]; then
                         #pkg_is_installed nvidia-349
 			#elif [ $lsb_release == "15.10" ]; then
@@ -937,8 +938,8 @@ task_install_kernel() {
 				precise|maya) $install_cmd linux-generic-lts-raring ;;
 				qiana) $install_cmd linux-generic-lts-vivid ;;
 				trusty|rafaela|rosa) $install_cmd linux-generic-lts-wily ;;
-				xenial) $install_cmd linux-image-4.9.8-040908-generic linux-headers-4.9.8-040908-generic linux-headers-4.9.8-040908;;
-				yakkety) $install_cmd linux-image-4.9.8-040908-generic linux-headers-4.9.8-040908-generic linux-headers-4.9.8-040908;;
+				xenial) $install_cmd linux-image-4.9.18-040918-generic linux-headers-4.9.18-040918-generic linux-headers-4.9.18-040918;;
+				yakkety) $install_cmd linux-image-4.9.18-040918-generic linux-headers-4.9.18-040918-generic linux-headers-4.9.18-040918;;
 				*) $install_cmd linux-generic ;;
 			esac
 			;;
@@ -970,8 +971,8 @@ task_install_kernel_test() {
                                 precise|maya) pkg_is_installed linux-generic-lts-raring || return 1 ;;
                                 qiana) pkg_is_installed linux-generic-lts-vivid || return 1 ;;
 				trusty|rafaela|rosa) pkg_is_installed linux-generic-lts-wily || return 1;;
-				xenial) pkg_is_installed linux-image-4.9.8-040908-generic;;
-				yakkety) pkg_is_installed linux-image-4.9.8-040908-generic;;
+				xenial) pkg_is_installed linux-image-4.9.18-040918-generic;;
+				yakkety) pkg_is_installed linux-image-4.9.18-040918-generic;;
                                 *) pkg_is_installed linux-generic || return 1 ;;
                         esac
 			;;
@@ -1016,19 +1017,19 @@ task_software() {
                         sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
                         fi
 			apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
-			wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
-			wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
-            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
-            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
-            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
-            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
-            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
-            wget http://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
+			wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
+			wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
+            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
+            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
+            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
+            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
+            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
+            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
             cp iwlwifi*.ucode /lib/firmware/
             rm -rf iwlwifi-*
-            wget http://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
-            wget http://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin
-            wget http://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin
+            wget https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
+            wget https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin
+            wget https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin
             mkdir /lib/firmware/i915
             cp kbl*.bin /lib/firmware/i915/
             cp skl*.bin /lib/firmware/i915
@@ -1039,11 +1040,11 @@ task_software() {
             rm -rf skl*.bin
             if pkg_is_installed lightdm; then
             if [ $lsb_release == "16.04" ]; then
-                        wget http://www.tuxedocomputers.com/support/dpms-disable
+                        wget https://www.tuxedocomputers.com/support/dpms-disable
                         sh dpms-disable && rm dpms-disable
                         fi
             if [ $lsb_release == "16.10" ]; then
-                        wget http://www.tuxedocomputers.com/support/dpms-disable
+                        wget https://www.tuxedocomputers.com/support/dpms-disable
                         sh dpms-disable && rm dpms-disable
                         fi
             fi           
