@@ -200,17 +200,11 @@ task_nvidia() {
 			elif [ $lsb_release == "15.10" ]; then
 				$install_cmd nvidia-352 mesa-utils
 			elif [ $lsb_release == "16.04" ]; then
-                                $install_cmd nvidia-370 mesa-utils nvidia-prime
+                $install_cmd nvidia-381 mesa-utils nvidia-prime
             elif [ $lsb_release == "16.10" ]; then
-                                $install_cmd nvidia-370 mesa-utils nvidia-prime                    
-			elif [ $lsb_release == "17.2" ]; then
-                                if ! has_skylake_cpu; then
-                                $install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
-                                fi
-			elif [ $lsb_release == "17.3" ]; then
-                                if ! has_skylake_cpu; then
-                                $install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
-                                fi
+                $install_cmd nvidia-381 mesa-utils nvidia-prime                    
+			elif [ $lsb_release == "17.04" ]; then
+                $install_cmd nvidia-381 mesa-utils nvidia-prime
 			else	
 			$install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
 			fi
@@ -266,7 +260,7 @@ task_nvidia_test() {
                                 true
                                 fi
 			else
-			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370
+			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370 || pkg_is_installed nvidia-381
 			#if [ $lsb_release == "15.04" ]; then
                         #pkg_is_installed nvidia-349
 			#elif [ $lsb_release == "15.10" ]; then
@@ -938,8 +932,9 @@ task_install_kernel() {
 				precise|maya) $install_cmd linux-generic-lts-raring ;;
 				qiana) $install_cmd linux-generic-lts-vivid ;;
 				trusty|rafaela|rosa) $install_cmd linux-generic-lts-wily ;;
-				xenial) $install_cmd linux-image-4.9.18-040918-generic linux-headers-4.9.18-040918-generic linux-headers-4.9.18-040918;;
-				yakkety) $install_cmd linux-image-4.9.18-040918-generic linux-headers-4.9.18-040918-generic linux-headers-4.9.18-040918;;
+				xenial) $install_cmd linux-image-4.11.1-041101-generic linux-headers-4.11.1-041101-generic linux-headers-4.11.1-041101;;
+				yakkety) $install_cmd linux-image-4.11.1-041101-generic linux-headers-4.11.1-041101-generic linux-headers-4.11.1-041101;;
+				zesty) $install_cmd linux-image-4.11.1-041101-generic linux-headers-4.11.1-041101-generic linux-headers-4.11.1-041101;;
 				*) $install_cmd linux-generic ;;
 			esac
 			;;
@@ -968,25 +963,26 @@ task_install_kernel_test() {
 	case "$lsb_dist_id" in
 		Ubuntu|LinuxMint)
 			case "$lsb_codename" in
-                                precise|maya) pkg_is_installed linux-generic-lts-raring || return 1 ;;
-                                qiana) pkg_is_installed linux-generic-lts-vivid || return 1 ;;
+                precise|maya) pkg_is_installed linux-generic-lts-raring || return 1 ;;
+                qiana) pkg_is_installed linux-generic-lts-vivid || return 1 ;;
 				trusty|rafaela|rosa) pkg_is_installed linux-generic-lts-wily || return 1;;
-				xenial) pkg_is_installed linux-image-4.9.18-040918-generic;;
-				yakkety) pkg_is_installed linux-image-4.9.18-040918-generic;;
-                                *) pkg_is_installed linux-generic || return 1 ;;
-                        esac
+				xenial) pkg_is_installed linux-image-4.11.1-041101-generic;;
+				yakkety) pkg_is_installed linux-image-4.11.1-041101-generic;;
+				zesty) pkg_is_installed linux-image-4.11.1-041101-generic;;
+                *) pkg_is_installed linux-generic || return 1 ;;
+            esac
 			;;
 		elementary*)
 			case "$lsb_codename" in
-                                freya) pkg_is_installed linux-generic-lts-wily || return 1 ;;
-                                *) pkg_is_installed linux-generic || return 1 ;;
-                        esac
-                        ;;
+                freya) pkg_is_installed linux-generic-lts-wily || return 1 ;;
+                *) pkg_is_installed linux-generic || return 1 ;;
+            esac
+            ;;
 		openSUSE*)
 			pkg_is_installed kernel-desktop || return 1
 			;;
-                SUSE*)
-                        pkg_is_installed kernel-default || return 1
+        SUSE*)
+            pkg_is_installed kernel-default || return 1
 			;;
 	esac
 
@@ -1038,17 +1034,7 @@ task_software() {
             ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
             rm -rf kbl*.bin
             rm -rf skl*.bin
-            if pkg_is_installed lightdm; then
-            if [ $lsb_release == "16.04" ]; then
-                        wget https://www.tuxedocomputers.com/support/dpms-disable
-                        sh dpms-disable && rm dpms-disable
-                        fi
-            if [ $lsb_release == "16.10" ]; then
-                        wget https://www.tuxedocomputers.com/support/dpms-disable
-                        sh dpms-disable && rm dpms-disable
-                        fi
-            fi           
-			if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
+            if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
 			cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
 			fi
 			if pkg_is_installed ubuntu-desktop; then
@@ -1070,7 +1056,7 @@ task_software_test() {
 
 	case "$lsb_dist_id" in
 		Ubuntu|LinuxMint|elementary*)
-                        pkg_is_installed laptop-mode-tools || return 1
+            pkg_is_installed laptop-mode-tools || return 1
 			;;
 	esac
 
