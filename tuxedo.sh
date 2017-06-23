@@ -307,33 +307,33 @@ task_fingerprint_test() {
         esac
 }
 
-task_tuxedo_wmi() {
+#task_tuxedo_wmi() {
 
-	case "$lsb_dist_id" in
-		Ubuntu|LinuxMint|elementary*)
-			if [ ! $product == "U931" ]; then
-			$install_cmd tuxedo-wmi-dkms
-			fi
-			;;
-		openSUSE*)
-			$install_cmd tuxedo-wmi
-			systemctl enable dkms
-			;;
-		SUSE*)
-                        $install_cmd tuxedo-wmi
-                        systemctl enable dkms
-                        ;;
-	esac
+	#case "$lsb_dist_id" in
+	#	Ubuntu|LinuxMint|elementary*)
+	#		if [ ! $product == "U931" ]; then
+	#		$install_cmd tuxedo-wmi-dkms
+	#		fi
+	#		;;
+	#	openSUSE*)
+	#		$install_cmd tuxedo-wmi
+	#		systemctl enable dkms
+	#		;;
+	#	SUSE*)
+     #                   $install_cmd tuxedo-wmi
+      #                  systemctl enable dkms
+     #                   ;;
+	#esac
 
-	local rfkill=
-	has_threeg && rfkill=" rfkill" || rfkill=
-	cat <<-__EOF__ >/etc/modprobe.d/tuxedo_wmi.conf
-		options tuxedo-wmi kb_color=white kb_brightness=10 led_invert$rfkill
-	__EOF__
-}
-task_tuxedo_wmi_test() {
-	pkg_is_installed tuxedo-wmi-dkms || pkg_is_installed tuxedo-wmi
-}
+	#local rfkill=
+	#has_threeg && rfkill=" rfkill" || rfkill=
+	#cat <<-__EOF__ >/etc/modprobe.d/tuxedo_wmi.conf
+#		options tuxedo-wmi kb_color=white kb_brightness=10 led_invert$rfkill
+#	__EOF__
+#}
+#task_tuxedo_wmi_test() {
+#	pkg_is_installed tuxedo-wmi-dkms || pkg_is_installed tuxedo-wmi
+#}
 
 task_wallpaper() {
 	$install_cmd tuxedo-wallpapers
@@ -781,41 +781,6 @@ pXJFhTejxk9LOMnVLCA=
 			# sub   2048R/7B189DC4 2014-11-24
 			cat <<-__EOF__ | apt-key add -
 -----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: deb.tuxedocomputers.com 2048R/B45D479D 2048R/7B189DC4
-
-mQENBFRzM9QBCADmOVF/naLtGvBA40iBtRfdi1JdKVEkTmvNHKPD0qV5QyG78/PR
-nwGd1/HraNjNZ1yjFv79a9juLpuhqriGndZVUYDi+qVl/s0IhAWO4RiThAd+hRUB
-svW+iLisL9pWkihNYQIllmyEHQ5X8mL+EkHr1jDBQKuhni0iL8qZ90j/EzyYPodC
-G/BN0nq10FNr32jdHh3hSjoEWlsybADfI6oca2xi6b9vc882o+mSkESQAHgBGA9i
-FfjfUvmUhMJ2vNUSHpzoRVvzT5goHrif8NbVw2vbFW15ATBzJzdtuFCeQzAWUOqF
-hJk/7/huFVA+vtuhz1thTN6Ntmm4tnjQWCkrABEBAAG0SVRVWEVETyBDb21wdXRl
-cnMgR21iSCAod3d3LnR1eGVkb2NvbXB1dGVycy5jb20pIDx0dXhAdHV4ZWRvY29t
-cHV0ZXJzLmNvbT6JATgEEwECACIFAlRzM9QCGwMGCwkIBwMCBhUIAgkKCwQWAgMB
-Ah4BAheAAAoJEAtKjQy0XUedfdEH/0ICwcc191cjDS1kLg9vTaynfs0Etd4fec+z
-zUQ5QSpi/Bqidu1Y3PJVdFjLiuzFOtCXFMMJCXTsgGHRgKiDAoSPl7M31cqp5qjP
-RE+4SMwyVLgHqnOmWZqJqb9n/AV9E9UYMLLsVbHQamskMiIKbewNzqwMSG4NtXoV
-jhpf8TYU0tAAWAgslWhphcTxE1JLVd8oV0inQiXZ198PiFg83NdQ18tmg3SinZfu
-AY9L+L9wspNcX+F1iWBNFCruOhClgzgFjsjqd89hZrYbJAFz9spDMOkBadpZgsXd
-u1lmp6OVK3R2Cb+/bDiqo2PA8/MecY/7dmj/M/Mjkmuf3XqcBO65AQ0EVHMz1AEI
-ALW1WQhKTCcGxN9tw9sqGCXRLYUqMDJzs5FESW5ZJxbWGyGlc0ZOLkBJMaQF9KE7
-M9mNw63KbLar8Jd7vdRRZvEZ4P+uxcwySvv3QMP708o4q3l7fAXl3dQWomKrK6xz
-pN7bDswhUoBvP7djErpc5ilWipAb6VHEiW1SJOzJx7Bg1FjjRhCy4JNW4F/YVHGD
-3EAIQBY/OtPTG7jHJDec/Xj5hgXkRSsr+/ku8fSeHPZ6xfMMTKfZZ22vSkBOa/8+
-Egt42b1LpnStjhjJuQP0mjuX0FogoFOrX00WhSjMJBE73Ogik9mg9N62hDNdJnAI
-f5z0aYxPVtrwS76RRZD0llsAEQEAAYkBHwQYAQIACQUCVHMz1AIbDAAKCRALSo0M
-tF1HnSJyB/0ZSvDSI/u34rsKKtKkEYAW1Ebx3NzcGacGMoT72LqXhY1DSqu0osDS
-ChwLERhqR6KMIPpALR5S8KTwTkTei1IgLpq5gk0tb+KR4T7Y3A/F5IqtQmXQ6Vtq
-RHAHLLKdM3IhL62mx85vMi2dN8g1Wzw/3QZD+omlsHVa382LWcUkR4MNatrn72O2
-eJI8pD1FfSZ8Qx2EEFsIDp4rKAj8wWOXpts1K8Jlk3AMAZbjvwOe62j+xMhKUCTZ
-P54AVNZHIfcFmkkTtKlc2Tkg4b9O3oII7iz3PV0E76wdgVt4nvL/MpRkJVnShG+Y
-3sAteW2HIF2OgNxmZppIY60OszOnX21d
-=+Wgc
------END PGP PUBLIC KEY BLOCK-----
-			__EOF__
-                        # sub   2048R/7B189DC4 2014-11-24
-			cat <<-__EOF__ | apt-key add -
------BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1
 Comment: deb.tuxedocomputers.com 4096R/54840598 4096R/A5842AD4
 
@@ -1141,7 +1106,7 @@ case "$lsb_dist_id" in
 esac
 
 has_nvidia_gpu && do_task nvidia
-[ "$(sed 's/^\s*//;s/\s*$//' /sys/devices/virtual/dmi/id/product_name)" != "MS-1758" ] && do_task tuxedo_wmi
+#[ "$(sed 's/^\s*//;s/\s*$//' /sys/devices/virtual/dmi/id/product_name)" != "MS-1758" ] && do_task tuxedo_wmi
 do_task wallpaper
 do_task software
 do_task misc
