@@ -6,7 +6,7 @@
 APT_CACHE_HOSTS="192.168.178.107 192.168.23.231"
 APT_CACHE_PORT=3142
 # additional packages that should be installed
-PACKAGES="cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl indicator-keylock libgtkglext1 unsettings gstreamer1.0-libav linssid"
+PACKAGES="cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl indicator-keylock libgtkglext1 unsettings gstreamer1.0-libav linssid unrar"
 
 
 error=0
@@ -30,7 +30,7 @@ P65xRP) grubakt="02GRUB";;
 P67xRP) grubakt="02GRUB";;
 P65xH*) grubakt="02GRUB";;
 P65_P67H*) grubakt="02GRUB";;
-P7xxDM*) grubakt="01GRUB";;
+P7xxDM*) grubakt="NOGRUB";;
 P775DM3*) grubakt="01GRUB";;
 *) echo "nichts" >/dev/null;;
 esac
@@ -205,6 +205,8 @@ task_nvidia() {
                 $install_cmd nvidia-381 mesa-utils nvidia-prime                    
 			elif [ $lsb_release == "17.04" ]; then
                 $install_cmd nvidia-381 mesa-utils nvidia-prime
+            elif [ $lsb_release == "17.10" ]; then
+                $install_cmd nvidia-387 mesa-utils nvidia-prime
 			else	
 			$install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
 			fi
@@ -249,8 +251,6 @@ task_nvidia() {
 task_nvidia_test() {
 	case "$lsb_dist_id" in
 		Ubuntu|LinuxMint)
-
-
 			if [ $lsb_release == "17.2" ]; then
                                 if has_skylake_cpu; then
 				true
@@ -260,7 +260,7 @@ task_nvidia_test() {
                                 true
                                 fi
 			else
-			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370 || pkg_is_installed nvidia-381
+			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370 || pkg_is_installed nvidia-381 || pkg_is_installed nvidia-387
 			#if [ $lsb_release == "15.04" ]; then
                         #pkg_is_installed nvidia-349
 			#elif [ $lsb_release == "15.10" ]; then
@@ -307,33 +307,33 @@ task_fingerprint_test() {
         esac
 }
 
-task_tuxedo_wmi() {
+#task_tuxedo_wmi() {
 
-	case "$lsb_dist_id" in
-		Ubuntu|LinuxMint|elementary*)
-			if [ ! $product == "U931" ]; then
-			$install_cmd tuxedo-wmi-dkms
-			fi
-			;;
-		openSUSE*)
-			$install_cmd tuxedo-wmi
-			systemctl enable dkms
-			;;
-		SUSE*)
-                        $install_cmd tuxedo-wmi
-                        systemctl enable dkms
-                        ;;
-	esac
+	#case "$lsb_dist_id" in
+	#	Ubuntu|LinuxMint|elementary*)
+	#		if [ ! $product == "U931" ]; then
+	#		$install_cmd tuxedo-wmi-dkms
+	#		fi
+	#		;;
+	#	openSUSE*)
+	#		$install_cmd tuxedo-wmi
+	#		systemctl enable dkms
+	#		;;
+	#	SUSE*)
+     #                   $install_cmd tuxedo-wmi
+      #                  systemctl enable dkms
+     #                   ;;
+	#esac
 
-	local rfkill=
-	has_threeg && rfkill=" rfkill" || rfkill=
-	cat <<-__EOF__ >/etc/modprobe.d/tuxedo_wmi.conf
-		options tuxedo-wmi kb_color=white kb_brightness=10 led_invert$rfkill
-	__EOF__
-}
-task_tuxedo_wmi_test() {
-	pkg_is_installed tuxedo-wmi-dkms || pkg_is_installed tuxedo-wmi
-}
+	#local rfkill=
+	#has_threeg && rfkill=" rfkill" || rfkill=
+	#cat <<-__EOF__ >/etc/modprobe.d/tuxedo_wmi.conf
+#		options tuxedo-wmi kb_color=white kb_brightness=10 led_invert$rfkill
+#	__EOF__
+#}
+#task_tuxedo_wmi_test() {
+#	pkg_is_installed tuxedo-wmi-dkms || pkg_is_installed tuxedo-wmi
+#}
 
 task_wallpaper() {
 	$install_cmd tuxedo-wallpapers
@@ -551,7 +551,9 @@ deb http://intel.tuxedocomputers.com/ubuntu $ubuntu_release main
 				if ! [ -f /etc/apt/sources.list.d/tuxedo-computers.list ] ; then
 				cat <<-__EOF__ >"/etc/apt/sources.list.d/tuxedo-computers.list"
 deb http://deb.tuxedocomputers.com/ubuntu $lsb_codename main
+deb http://intel.tuxedocomputers.com/ubuntu $lsb_codename main
 deb http://graphics.tuxedocomputers.com/ubuntu $lsb_codename main
+deb http://kernel.tuxedocomputers.com/ubuntu $lsb_codename main
 				__EOF__
 				fi
 				;;
@@ -561,6 +563,7 @@ deb http://graphics.tuxedocomputers.com/ubuntu $lsb_codename main
 deb http://deb.tuxedocomputers.com/ubuntu $lsb_codename main
 deb http://intel.tuxedocomputers.com/ubuntu $lsb_codename main
 deb http://graphics.tuxedocomputers.com/ubuntu $lsb_codename main
+#deb http://kernel.tuxedocomputers.com/ubuntu $lsb_codename main
 				__EOF__
 			fi
 			;;
@@ -781,41 +784,6 @@ pXJFhTejxk9LOMnVLCA=
 			# sub   2048R/7B189DC4 2014-11-24
 			cat <<-__EOF__ | apt-key add -
 -----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: deb.tuxedocomputers.com 2048R/B45D479D 2048R/7B189DC4
-
-mQENBFRzM9QBCADmOVF/naLtGvBA40iBtRfdi1JdKVEkTmvNHKPD0qV5QyG78/PR
-nwGd1/HraNjNZ1yjFv79a9juLpuhqriGndZVUYDi+qVl/s0IhAWO4RiThAd+hRUB
-svW+iLisL9pWkihNYQIllmyEHQ5X8mL+EkHr1jDBQKuhni0iL8qZ90j/EzyYPodC
-G/BN0nq10FNr32jdHh3hSjoEWlsybADfI6oca2xi6b9vc882o+mSkESQAHgBGA9i
-FfjfUvmUhMJ2vNUSHpzoRVvzT5goHrif8NbVw2vbFW15ATBzJzdtuFCeQzAWUOqF
-hJk/7/huFVA+vtuhz1thTN6Ntmm4tnjQWCkrABEBAAG0SVRVWEVETyBDb21wdXRl
-cnMgR21iSCAod3d3LnR1eGVkb2NvbXB1dGVycy5jb20pIDx0dXhAdHV4ZWRvY29t
-cHV0ZXJzLmNvbT6JATgEEwECACIFAlRzM9QCGwMGCwkIBwMCBhUIAgkKCwQWAgMB
-Ah4BAheAAAoJEAtKjQy0XUedfdEH/0ICwcc191cjDS1kLg9vTaynfs0Etd4fec+z
-zUQ5QSpi/Bqidu1Y3PJVdFjLiuzFOtCXFMMJCXTsgGHRgKiDAoSPl7M31cqp5qjP
-RE+4SMwyVLgHqnOmWZqJqb9n/AV9E9UYMLLsVbHQamskMiIKbewNzqwMSG4NtXoV
-jhpf8TYU0tAAWAgslWhphcTxE1JLVd8oV0inQiXZ198PiFg83NdQ18tmg3SinZfu
-AY9L+L9wspNcX+F1iWBNFCruOhClgzgFjsjqd89hZrYbJAFz9spDMOkBadpZgsXd
-u1lmp6OVK3R2Cb+/bDiqo2PA8/MecY/7dmj/M/Mjkmuf3XqcBO65AQ0EVHMz1AEI
-ALW1WQhKTCcGxN9tw9sqGCXRLYUqMDJzs5FESW5ZJxbWGyGlc0ZOLkBJMaQF9KE7
-M9mNw63KbLar8Jd7vdRRZvEZ4P+uxcwySvv3QMP708o4q3l7fAXl3dQWomKrK6xz
-pN7bDswhUoBvP7djErpc5ilWipAb6VHEiW1SJOzJx7Bg1FjjRhCy4JNW4F/YVHGD
-3EAIQBY/OtPTG7jHJDec/Xj5hgXkRSsr+/ku8fSeHPZ6xfMMTKfZZ22vSkBOa/8+
-Egt42b1LpnStjhjJuQP0mjuX0FogoFOrX00WhSjMJBE73Ogik9mg9N62hDNdJnAI
-f5z0aYxPVtrwS76RRZD0llsAEQEAAYkBHwQYAQIACQUCVHMz1AIbDAAKCRALSo0M
-tF1HnSJyB/0ZSvDSI/u34rsKKtKkEYAW1Ebx3NzcGacGMoT72LqXhY1DSqu0osDS
-ChwLERhqR6KMIPpALR5S8KTwTkTei1IgLpq5gk0tb+KR4T7Y3A/F5IqtQmXQ6Vtq
-RHAHLLKdM3IhL62mx85vMi2dN8g1Wzw/3QZD+omlsHVa382LWcUkR4MNatrn72O2
-eJI8pD1FfSZ8Qx2EEFsIDp4rKAj8wWOXpts1K8Jlk3AMAZbjvwOe62j+xMhKUCTZ
-P54AVNZHIfcFmkkTtKlc2Tkg4b9O3oII7iz3PV0E76wdgVt4nvL/MpRkJVnShG+Y
-3sAteW2HIF2OgNxmZppIY60OszOnX21d
-=+Wgc
------END PGP PUBLIC KEY BLOCK-----
-			__EOF__
-                        # sub   2048R/7B189DC4 2014-11-24
-			cat <<-__EOF__ | apt-key add -
------BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1
 Comment: deb.tuxedocomputers.com 4096R/54840598 4096R/A5842AD4
 
@@ -932,9 +900,10 @@ task_install_kernel() {
 				precise|maya) $install_cmd linux-generic-lts-raring ;;
 				qiana) $install_cmd linux-generic-lts-vivid ;;
 				trusty|rafaela|rosa) $install_cmd linux-generic-lts-wily ;;
-				xenial) $install_cmd linux-image-4.11.1-041101-generic linux-headers-4.11.1-041101-generic linux-headers-4.11.1-041101;;
-				yakkety) $install_cmd linux-image-4.11.1-041101-generic linux-headers-4.11.1-041101-generic linux-headers-4.11.1-041101;;
-				zesty) $install_cmd linux-image-4.11.1-041101-generic linux-headers-4.11.1-041101-generic linux-headers-4.11.1-041101;;
+				xenial) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+				yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
+				zesty) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+				artful) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
 				*) $install_cmd linux-generic ;;
 			esac
 			;;
@@ -961,14 +930,16 @@ task_install_kernel() {
 }
 task_install_kernel_test() {
 	case "$lsb_dist_id" in
+	
 		Ubuntu|LinuxMint)
 			case "$lsb_codename" in
                 precise|maya) pkg_is_installed linux-generic-lts-raring || return 1 ;;
                 qiana) pkg_is_installed linux-generic-lts-vivid || return 1 ;;
 				trusty|rafaela|rosa) pkg_is_installed linux-generic-lts-wily || return 1;;
-				xenial) pkg_is_installed linux-image-4.11.1-041101-generic;;
-				yakkety) pkg_is_installed linux-image-4.11.1-041101-generic;;
-				zesty) pkg_is_installed linux-image-4.11.1-041101-generic;;
+				xenial) pkg_is_installed linux-image-4.11.8-041108-generic;;
+				yakkety) pkg_is_installed linux-image-4.11.8-041108-generic;;
+				zesty) pkg_is_installed linux-image-generic;;
+				artful) pkg_is_installed linux-image-generic;;
                 *) pkg_is_installed linux-generic || return 1 ;;
             esac
 			;;
@@ -1141,7 +1112,7 @@ case "$lsb_dist_id" in
 esac
 
 has_nvidia_gpu && do_task nvidia
-[ "$(sed 's/^\s*//;s/\s*$//' /sys/devices/virtual/dmi/id/product_name)" != "MS-1758" ] && do_task tuxedo_wmi
+#[ "$(sed 's/^\s*//;s/\s*$//' /sys/devices/virtual/dmi/id/product_name)" != "MS-1758" ] && do_task tuxedo_wmi
 do_task wallpaper
 do_task software
 do_task misc
