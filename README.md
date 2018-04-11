@@ -24,7 +24,7 @@ sowie
 * laptop-mode-tools zur besseren Energiesteuerung uvm. durch. 
 Es prüft auch, ob die Treiber und Konfigurationen bereits installiert sind bzw. ausgeführt wurden und korrigiert diese gegebenenfalls. Sie können das Script gefahrlos auch mehrfach ausführen!
 
-Verwenden Sie das Script bitte nur bei TUXEDO Geräten mit den von uns angebotenen Distributionen!
+**Verwenden Sie das Script bitte nur bei TUXEDO _Notebooks_ mit den von uns angebotenen Distributionen!**
 Für andere Distris kann z.B. nur der Treiber als .deb oder .rpm Paket verwendet werden (z.B. bei Debian auf einem Tuxedo Book).
 
 Das Script fügt auch unser Repository mit der aktuellen Version unseres hauseigenen Treibers (Tuxedo-wmi) sowie weitere nützliche Pakete hinzu. So kann alles automatisch aktuell gehalten werden.
@@ -42,3 +42,8 @@ Main tasks of the script:
 * Installation of laptop-mode-tools to save energy
 
 It checks if tasks have already been done, and makes updates if necessary. It causes no problems to run the script several times. 
+
+**Please use the script only for TUXEDO _laptops_ with the distributions we offer!**
+For other distributions you can use the driver only as .deb or .rpm package (e.g. for Debian on a Tuxedo book).
+
+The script also adds our repository with the latest version of our own driver (Tuxedo-wmi) and other useful packages. This way everything can be kept up to date automatically.
