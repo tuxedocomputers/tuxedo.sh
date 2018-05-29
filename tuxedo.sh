@@ -6,7 +6,7 @@
 APT_CACHE_HOSTS="192.168.178.107 192.168.23.231"
 APT_CACHE_PORT=3142
 # additional packages that should be installed
-PACKAGES="cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl indicator-keylock libgtkglext1 unsettings gstreamer1.0-libav linssid unrar"
+PACKAGES="cheese pavucontrol brasero gparted pidgin vim mesa-utils obexftp ethtool xautomation exfat-fuse exfat-utils curl libgtkglext1 unsettings gstreamer1.0-libav linssid unrar"
 
 
 error=0
@@ -205,9 +205,9 @@ task_nvidia() {
                 $install_cmd nvidia-381 mesa-utils nvidia-prime                    
 			elif [ $lsb_release == "17.04" ]; then
                 $install_cmd nvidia-381 mesa-utils nvidia-prime
-            elif [ $lsb_release == "17.10" ]; then
-                $install_cmd nvidia-387 mesa-utils nvidia-prime
-			else	
+            elif [ $lsb_release == "18.04" ]; then
+                $install_cmd nvidia-driver-390 mesa-utils nvidia-prime vdpau-va-driver python-appindicator python-cairo python-gtk2 	
+            else	
 			$install_cmd bumblebee bumblebee-nvidia nvidia-349 primus mesa-utils
 			fi
 			if ! has_skylake_cpu; then
@@ -260,7 +260,7 @@ task_nvidia_test() {
                                 true
                                 fi
 			else
-			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370 || pkg_is_installed nvidia-381 || pkg_is_installed nvidia-387
+			pkg_is_installed nvidia-349 || pkg_is_installed nvidia-352 || pkg_is_installed nvidia-370 || pkg_is_installed nvidia-381 || pkg_is_installed nvidia-387 || pkg_is_installed nvidia-driver-390
 			#if [ $lsb_release == "15.04" ]; then
                         #pkg_is_installed nvidia-349
 			#elif [ $lsb_release == "15.10" ]; then
@@ -904,6 +904,7 @@ task_install_kernel() {
 				yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
 				zesty) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
 				artful) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+				bionic) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
 				*) $install_cmd linux-generic ;;
 			esac
 			;;
@@ -940,6 +941,7 @@ task_install_kernel_test() {
 				yakkety) pkg_is_installed linux-image-4.11.8-041108-generic;;
 				zesty) pkg_is_installed linux-image-generic;;
 				artful) pkg_is_installed linux-image-generic;;
+            	bionic) pkg_is_installed linux-image-generic;;
                 *) pkg_is_installed linux-generic || return 1 ;;
             esac
 			;;
