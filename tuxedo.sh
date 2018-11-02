@@ -1,8 +1,8 @@
 #!/bin/bash
 # Author: TUXEDO Computers GmbH <tux@tuxedocomputers.com>
-# Version: 3.41
+# Version: 3.42
 
-APT_CACHE_HOSTS="192.168.178.107 192.168.23.231"
+APT_CACHE_HOSTS="192.168.178.110 192.168.23.231"
 APT_CACHE_PORT=3142
 # additional packages that should be installed
 PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
@@ -32,10 +32,15 @@ P67xRP) grubakt="02GRUB";;
 P65xH*) grubakt="02GRUB";;
 P65_P67H*) grubakt="02GRUB";;
 P7xxDM*) grubakt="NOGRUB";;
+P7xxTM*) grubakt="03GRUB";;
 P775DM3*) grubakt="01GRUB";;
 *) echo "nichts" >/dev/null;;
 esac
-
+board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
+case $board in
+P95*) fix="audiofix";;
+*) echo "nichts" >/dev/null;;
+esac
 cd $(dirname $0)
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -124,6 +129,8 @@ task_grub() {
             if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop' "$default_grub"; then
             sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
             fi
+            elif ifclass 03GRUB; then
+            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi= acpi_os_name=Linux"/' $default_grub
             else
             if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor' "$default_grub"; then
             sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
@@ -331,46 +338,6 @@ task_misc() {
 
 			;;
 	esac
-    case "$product" in
-        P95xER) 
-            echo "options snd-hda-intel model=no-primary-hp power_save=1" > "/etc/modprobe.d/alsa.conf"
-            echo "amixer -c 0 sset Headphone 1005 unmute" > /usr/local/bin/soundfix.sh && chmod +x /usr/local/bin/soundfix.sh
-            dir_name=$(getent passwd | awk -v uid=1000 'BEGIN { FS=":" } { if ($3 == 1000) print $1 }')
-            if ! [ -d "/home/$dir_name/autostart" ]; then
-            mkdir "/home/$dir_name/autostart"
-            fi
-            cat <<-__EOF__ >"/home/$dir_name/.config/autostart/soundfix.desktop"
-[Desktop Entry]
-Type=Application
-Exec=/usr/local/bin/soundfix.sh
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-Name=soundfix
-Comment[de_DE]=soundfix
-Comment=soundfix
-__EOF__
-            ;;
-        *) echo "nix">/dev/null;;
-    esac    
-#	local file=
-#	case "$lsb_dist_id" in
-#		Ubuntu) 	file=/etc/rc.local ;;
-#		openSUSE)        file=/etc/init.d/boot.local ;;
-#	esac
-#
-#	sed -i '/^#!.*/,1 a\
-#trigger_src="phy0radio"\
-#trigger_led="/sys/class/leds/tuxedo\:\:airplane/trigger"\
-#if which rfkill >/dev/null 2>&1; then\
-#	if rfkill list | grep -wA2 phy0: | grep -wq "blocked: yes"; then\
-#        echo 0 >"/sys/class/leds/tuxedo\:\:airplane/brightness"\
-#	else\
-#        echo 1 >"/sys/class/leds/tuxedo\:\:airplane/brightness"\
-#	fi\
-#fi\
-#\[ -w "$trigger_led" \] && grep -wq "$trigger_src" "$trigger_led" && echo "$trigger_src" >"$trigger_led"
-#' "$file"
 }
 task_misc_test() {
 	true
@@ -679,12 +646,19 @@ task_software() {
 		Ubuntu)
 			mkdir -p /etc/laptop-mode/conf.d && touch /etc/laptop-mode/conf.d/ethernet.conf
 			echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
-                        $install_cmd laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils 
+                        $install_cmd laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks 
 			if [ $lsb_release == "15.10" ]; then
                         sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
                         fi
 			apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
+                        if [ $lsb_release == "16.04" ]; then
 			wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
+                        fi
+			if [ $lsb_release == "18.04" ]; then
+			if [ $fix == "audiofix" ]; then
+			$install_cmd oem-audio-hda-daily-dkms
+			fi
+			fi
 			wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
             wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
             wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
