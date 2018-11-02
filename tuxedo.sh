@@ -186,19 +186,13 @@ task_grub() {
 
             if [ ! $grubakt == "NOGRUB" ]; then
                 if [ $grubakt == "01GRUB" ]; then
-                    if ! grep -q 'acpi_osi=Linux acpi_backlight=vendor' "$default_grub"; then
-                        sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi=Linux acpi_backlight=vendor"/' $default_grub
-                    fi
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi=Linux acpi_backlight=vendor"/' $default_grub
                 elif [ $grubakt == "02GRUB" ]; then
-                    if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop' "$default_grub"; then
-                        sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
-                    fi
-                elif ifclass 03GRUB; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
+                elif [ $grubakt == "03GRUB" ]; then
                     sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi= acpi_os_name=Linux"/' $default_grub
                 else
-                    if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor' "$default_grub"; then
-                        sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
-                    fi
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
                 fi
             fi
 
@@ -211,11 +205,19 @@ task_grub() {
             ;;
         openSUSE)
             local default_grub=/etc/default/grub
-            #if [ ! $product == "U931" ]; then
-                #if ! grep -q 'acpi_os_name=Linux acpi_osi= acpi_backlight=vendor' "$default_grub"; then
-                sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0"/' $default_grub
-                #fi
-            #fi
+            
+            if [ ! $grubakt == "NOGRUB" ]; then
+                if [ $grubakt == "01GRUB" ]; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_osi=Linux acpi_backlight=vendor"/' $default_grub
+                elif [ $grubakt == "02GRUB" ]; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
+                elif [ $grubakt == "03GRUB" ]; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_osi= acpi_os_name=Linux"/' $default_grub
+                else
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
+                fi
+            fi
+
             grub2-mkconfig -o /boot/grub2/grub.cfg
             ;;
     esac
@@ -766,7 +768,6 @@ task_clean_test() {
     true
 }
 
-
 do_task() {
     error=0
     printf "%-16s " "$1" >&3
@@ -832,7 +833,6 @@ case "$lsb_dist_id" in
 esac
 
 has_nvidia_gpu && do_task nvidia
-#[ "$(sed 's/^\s*//;s/\s*$//' /sys/devices/virtual/dmi/id/product_name)" != "MS-1758" ] && do_task tuxedo_wmi
 do_task wallpaper
 do_task software
 do_task misc
