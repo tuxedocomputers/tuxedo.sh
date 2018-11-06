@@ -35,49 +35,19 @@ xset -dpms
 lsb_dist_id="$(lsb_release -si)"   # e.g. 'Ubuntu', 'LinuxMint', 'openSUSE project'
 lsb_release="$(lsb_release -sr)"   # e.g. '13.04', '15', '12.3'
 lsb_codename="$(lsb_release -sc)"  # e.g. 'raring', 'olivia', 'Dartmouth'
+
+apt_opts='-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew --fix-missing'
+zypper_opts='-n'
+
 product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/product_name" | tr ' ,/-' '_')" # e.g. 'U931'
+board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
 
 case $product in
-    U931) 
+    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform) 
         product="U931"
         grubakt="NOGRUB"
         ;;
-    U953) 
-        product="U931"
-        grubakt="NOGRUB"
-        ;;
-    INFINITYBOOK13V2)
-        product="U931"
-        grubakt="NOGRUB"
-        ;;
-    InfinityBook13V3)
-        product="U931"
-        grubakt="NOGRUB"
-        ;;
-    InfinityBook15*)
-        product="U931"
-        grubakt="NOGRUB"
-        ;;
-    Skylake_Platform)
-        product="U931"
-        grubakt="NOGRUB"
-        ;;
-    P65_67RS*)
-        grubakt="02GRUB"
-        ;;
-    P65_67RP*)
-        grubakt="02GRUB"
-        ;;
-    P65xRP)
-        grubakt="02GRUB"
-        ;;
-    P67xRP)
-        grubakt="02GRUB"
-        ;;
-    P65xH*)
-        grubakt="02GRUB"
-        ;;
-    P65_P67H*)
+    P65_67RS*|P65_67RP*|P65xRP|P67xRP|P65xH*|P65_P67H*)
         grubakt="02GRUB"
         ;;
     P7xxDM*)
@@ -93,8 +63,6 @@ case $product in
         echo "nichts" >/dev/null
         ;;
 esac
-
-board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
 
 case $board in
     P95*) 
@@ -120,9 +88,6 @@ fi
 
 echo $(basename $0)
 lsb_release -a
-
-apt_opts='-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew --fix-missing'
-zypper_opts='-n'
 
 case "$lsb_dist_id" in
     Ubuntu)
@@ -180,21 +145,30 @@ pkg_is_installed() {
 }
 
 task_grub() {
+    local default_grub=/etc/default/grub
+
     case "$lsb_dist_id" in
         Ubuntu)
-            local default_grub=/etc/default/grub
+            case "$grubakt" in
+                01GRUB)
+                    grub_options = ("acpi_osi=Linux" "acpi_backlight=vendor")
+                    ;;
+                02GRUB)
+                    grub_options = ("acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
+                    ;;
+                03GRUB)
+                    grub_options = ("acpi_osi=" "acpi_os_name=Linux")
+                    ;;
+                *)
+                    grub_options = ("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
+                    ;;
+            esac
 
-            if [ ! $grubakt == "NOGRUB" ]; then
-                if [ $grubakt == "01GRUB" ]; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi=Linux acpi_backlight=vendor"/' $default_grub
-                elif [ $grubakt == "02GRUB" ]; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
-                elif [ $grubakt == "03GRUB" ]; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_osi= acpi_os_name=Linux"/' $default_grub
-                else
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
+            for option in ${grub_options[*]}; do
+                if ! grep -q $option "$default_grub"; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 '"$option"'"/' $default_grub
                 fi
-            fi
+            done
 
             if has_nvidia_gpu; then
                 sed -i '/^GRUB_CMDLINE_LINUX=/ s/nomodeset//' $default_grub
@@ -203,20 +177,28 @@ task_grub() {
             sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT.*/,1 aGRUB_GFXPAYLOAD_LINUX=1920*1080' $default_grub
             update-grub
             ;;
-        openSUSE)
-            local default_grub=/etc/default/grub
-            
-            if [ ! $grubakt == "NOGRUB" ]; then
-                if [ $grubakt == "01GRUB" ]; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_osi=Linux acpi_backlight=vendor"/' $default_grub
-                elif [ $grubakt == "02GRUB" ]; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor i8042.reset i8042.nomux i8042.nopnp i8042.noloop"/' $default_grub
-                elif [ $grubakt == "03GRUB" ]; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_osi= acpi_os_name=Linux"/' $default_grub
-                else
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 loglevel=0 acpi_os_name=Linux acpi_osi= acpi_backlight=vendor"/' $default_grub
+
+        openSUSE*|SUSE*)
+            case "$grubakt" in
+                01GRUB)
+                    grub_options=("loglevel=0" "acpi_osi=Linux" "acpi_backlight=vendor")
+                    ;;
+                02GRUB)
+                    grub_options=("loglevel=0" "acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
+                    ;;
+                03GRUB)
+                    grub_options=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux")
+                    ;;
+                *)
+                    grub_options=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
+                    ;;
+            esac
+
+            for option in ${grub_options[*]}; do
+                if ! grep -q $option "$default_grub"; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 '"$option"'"/' $default_grub
                 fi
-            fi
+            done
 
             grub2-mkconfig -o /boot/grub2/grub.cfg
             ;;
@@ -233,10 +215,10 @@ task_nvidia() {
             if [ $lsb_release == "16.04" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             elif [ $lsb_release == "16.10" ]; then
-                $install_cmd nvidia-390 mesa-utils nvidia-prime                    
+                $install_cmd nvidia-390 mesa-utils nvidia-prime
             elif [ $lsb_release == "17.04" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
-                elif [ $lsb_release == "18.04" ]; then
+            elif [ $lsb_release == "18.04" ]; then
                 $install_cmd nvidia-driver-390 mesa-utils nvidia-prime vdpau-va-driver python-appindicator python-cairo python-gtk2
             else
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
@@ -285,23 +267,15 @@ task_fingerprint() {
 
 task_fingerprint_test() {
     case "$lsb_dist_id" in
-        Ubuntu)
-            pkg_is_installed fprint-demo && pkg_is_installed libfprint0
-            ;;
-        openSUSE)
-            pkg_is_installed libfprint0
-            ;;
+        Ubuntu) pkg_is_installed fprint-demo && pkg_is_installed libfprint0;;
+        openSUSE) pkg_is_installed libfprint0;;
     esac
 }
 
 task_wallpaper() {
     case "$lsb_dist_id" in
-        Ubuntu)
-            $install_cmd tuxedo-wallpapers
-            ;;
-        openSUSE)
-            $install_cmd tuxedo-one-wallpapers
-            ;;
+        Ubuntu) $install_cmd tuxedo-wallpapers;;
+        openSUSE) $install_cmd tuxedo-one-wallpapers;;
     esac
 
     if pkg_is_installed ubuntu-desktop; then
@@ -621,26 +595,17 @@ task_install_kernel() {
     case "$lsb_dist_id" in
         Ubuntu)
             case "$lsb_codename" in
-                xenial) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+                xenial|zesty|artful|bionic) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
-                zesty) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                artful) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                bionic) $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 *) $install_cmd linux-generic ;;
             esac
             ;;
-        openSUSE*)
+        openSUSE*|SUSE*)
             case "$lsb_release" in
                 42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
                 *) echo "nichts" >/dev/null;;
             esac
             ;;
-        SUSE*)
-            case "$lsb_release" in
-                42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
-                *) echo "nichts" >/dev/null;;
-            esac
-        ;;
     esac
 }
 
@@ -656,10 +621,7 @@ task_install_kernel_test() {
                 *) pkg_is_installed linux-generic || return 1 ;;
             esac
             ;;
-        openSUSE*)
-            pkg_is_installed kernel-default || return 1
-            ;;
-        SUSE*)
+        openSUSE*|SUSE*)
             pkg_is_installed kernel-default || return 1
             ;;
     esac
