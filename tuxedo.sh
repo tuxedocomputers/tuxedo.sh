@@ -25,6 +25,8 @@ cd $(dirname $0) || return 0
 SCRIPTPATH=$(readlink -f "$0")
 BASEDIR=$(dirname "$SCRIPTPATH")
 
+BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
+
 # additional packages that should be installed
 PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
 
@@ -275,51 +277,15 @@ task_wallpaper() {
     esac
 
     if pkg_is_installed ubuntu-desktop; then
-        cat <<-__EOF__ >/usr/share/glib-2.0/schemas/30_tuxedo-settings.gschema.override
-[org.gnome.desktop.background]
-picture-uri='file:///usr/share/tuxedo-wallpapers/tuxedo-background_10.jpg'
-__EOF__
+        local filename="30_tuxedo-settings.gschema.override"
+        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
         glib-compile-schemas /usr/share/glib-2.0/schemas
     elif pkg_is_installed kubuntu-desktop; then
-        cat <<-__EOF__ >/usr/share/kde4/apps/plasma-desktop/init/80-tuxedo.js
-a = activities()
-
-for (i in a) {
-    a[i].wallpaperPlugin    = 'image'
-    a[i].wallpaperMode      = 'SingleImage'
-    a[i].currentConfigGroup = Array('Wallpaper', 'image')
-    a[i].writeConfig('wallpaper', '/usr/share/wallpapers/Tuxedo_10/contents/images/1920x1080.jpg')
-    a[i].writeConfig('wallpaperposition', '0')
-}
-__EOF__
+        local filename="80-tuxedo.js"
+        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
     elif pkg_is_installed xubuntu-desktop; then
-        cat <<-__EOF__ >/etc/xdg/xdg-xubuntu/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
-<?xml version="1.0" encoding="UTF-8"?>
-
-<channel name="xfce4-desktop" version="1.0">
-    <property name="desktop-icons" type="empty">
-        <property name="style" type="int" value="2"/>
-        <property name="file-icons" type="empty">
-            <property name="show-home" type="bool" value="true"/>
-            <property name="show-filesystem" type="bool" value="true"/>
-            <property name="show-removable" type="bool" value="true"/>
-            <property name="show-trash" type="bool" value="true"/>
-        </property>
-    </property>
-    <property name="backdrop" type="empty">
-        <property name="screen0" type="empty">
-            <property name="monitor0" type="empty">
-                <property name="image-path" type="string" value="/usr/share/xfce4/backdrops/tuxedo-background_10.jpg"/>
-                <property name="image-show" type="bool" value="true"/>
-            </property>
-            <property name="monitor1" type="empty">
-                <property name="image-path" type="string" value="/usr/share/xfce4/backdrops/tuxedo-background_10.jpg"/>
-                <property name="image-show" type="bool" value="true"/>
-            </property>
-        </property>
-    </property>
-</channel>
-__EOF__
+        local filename="xfce4-desktop.xml"
+        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
     fi
 }
 
@@ -342,13 +308,7 @@ task_misc() {
             if gsettings writable $schema disabled-scopes; then
                 gsettings set $schema disabled-scopes "$val"
             fi
-            ##AH
-            # UPDATE MKE: 18.04 default
-            #if gsettings writable $schema remote-content-search; then
-            #    gsettings set $schema remote-content-search none
-            #fi
-            # Fix right "button" on Clickpads. Problem reported the first time on systems with Ubuntu 18.04
-            # default: 'fingers'
+
             if [ "$lsb_release" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
                 gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
             fi
@@ -380,8 +340,6 @@ download_file() {
 task_repository() {
     local tmp
     tmp="$(mktemp -d)"
-
-    local BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
     case "$lsb_dist_id" in
         Ubuntu)
@@ -484,20 +442,6 @@ task_install_kernel_test() {
             ;;
     esac
 
-    return 0
-}
-
-task_trim() {
-    while read device mountpoint fstype _; do
-        [ -x "$(which hdparm)" ] || $install_cmd hdparm
-        if [ "$fstype" = "ext4" ] && hdparm -I "$device" | grep -qiw 'trim'; then
-            fstrim -v "$mountpoint"
-            tune2fs -o discard "$device"
-        fi
-    done </proc/mounts
-}
-
-task_trim_test() {
     return 0
 }
 
@@ -606,61 +550,18 @@ do_task() {
     fi
 }
 
-trap "rm -f $apt_conf_proxy $apt_sources_list; exit" ABRT EXIT HUP INT QUIT
-
-[ -x $(which nc) ] || $install_cmd netcat-openbsd
-
-proxy=
-for host in $APT_CACHE_HOSTS; do
-    echo "Trying to reach proxy $host ..."
-    if ping -w 2 $host && nc -zv $host $APT_CACHE_PORT 2>&1 | grep -q 'Connection.*succeeded!'; then
-        proxy=$host
-        break
-    fi
-done
-
-if [ "$proxy" ]; then
-    apt_conf_proxy=/etc/apt/apt.conf.d/00proxy
-    echo "Using apt-cache $proxy:$APT_CACHE_PORT" >&3
-    case "$lsb_dist_id" in
-        Ubuntu|LinuxMint|elementary*)
-            cat >"$apt_conf_proxy" <<-__EOF__
-Acquire::http { Proxy "http://$proxy:$APT_CACHE_PORT"; };
-__EOF__
-            ;;
-        openSUSE*|SUSE*)
-            export http_proxy=http://$proxy:$APT_CACHE_PORT
-            ;;
-    esac
-else
-    echo "apt-cache NOT available" >&3
-fi
-
 do_task clean
 do_task update
 do_task repository
 do_task install_kernel
-#do_task trim
 do_task grub
-
-case "$lsb_dist_id" in
-    Ubuntu|LinuxMint|elementary*)
-        [ "$lsb_codename" = "quantal" -o "$lsb_codename" = "raring" -o "$lsb_codename" = "nadia" -o "$lsb_codename" = "olivia" ] && do_task saucy_kernel
-        has_fingerprint_reader && do_task fingerprint
-        ;;
-    openSUSE*|SUSE*)
-        has_fingerprint_reader && do_task fingerprint
-        ;;
-esac
-
+has_fingerprint_reader && do_task fingerprint
 has_nvidia_gpu && do_task nvidia
 do_task wallpaper
 do_task software
 do_task misc
-#do_task files
 do_task clean
 do_task update
 
-rm -f $apt_conf_proxy $apt_sources_list
 read -p "Press <ENTER> to reboot" >&3 2>&1
 exec reboot
