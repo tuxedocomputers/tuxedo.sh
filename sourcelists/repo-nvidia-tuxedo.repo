@@ -1,0 +1,8 @@
+[repo-nvidia-tuxedo]
+name=TUXEDO Computers - 15.0 NVIDIA
+baseurl=http://nvidia.tuxedocomputers.com/opensuse/15.0
+path=/
+gpgkey=http://nvidia.tuxedocomputers.com/opensuse/15.0/repodata/repomd.xml.key
+gpgcheck=1
+enabled=1
+autorefresh=1

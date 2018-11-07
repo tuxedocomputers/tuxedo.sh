@@ -1,0 +1,4 @@
+deb http://deb.tuxedocomputers.com/ubuntu ${lsb_codename} main
+deb http://intel.tuxedocomputers.com/ubuntu ${lsb_codename} main
+deb http://graphics.tuxedocomputers.com/ubuntu ${lsb_codename} main
+deb http://kernel.tuxedocomputers.com/ubuntu ${lsb_codename} main
