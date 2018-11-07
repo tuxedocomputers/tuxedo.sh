@@ -145,16 +145,16 @@ task_grub() {
         Ubuntu)
             case "$grubakt" in
                 01GRUB)
-                    grub_options = ("acpi_osi=Linux" "acpi_backlight=vendor")
+                    grub_options=("acpi_osi=Linux" "acpi_backlight=vendor")
                     ;;
                 02GRUB)
-                    grub_options = ("acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
+                    grub_options=("acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
                     ;;
                 03GRUB)
-                    grub_options = ("acpi_osi=" "acpi_os_name=Linux")
+                    grub_options=("acpi_osi=" "acpi_os_name=Linux")
                     ;;
                 *)
-                    grub_options = ("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
+                    grub_options=("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
                     ;;
             esac
 
@@ -219,6 +219,11 @@ task_nvidia() {
             fi
             ;;
         openSUSE*|SUSE*)
+            if [ "$DESKTOP_SESSION" == "gnome" ]; then
+                $install_cmd lightdm
+                update-alternatives --set default-displaymanager /usr/lib/X11/displaymanagers/lightdm
+            fi
+
             if $(lspci -nd '10de:' | grep -q '030[02]:' && lspci -nd '8086:' | grep -q '0300:'); then
                 $install_cmd nvidia-computeG04 nvidia-gfxG04-kmp-default nvidia-glG04 x11-video-nvidiaG04 suse-prime
                 sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' /etc/X11/xdm/Xsetup
@@ -386,7 +391,7 @@ task_repository() {
             local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
 
             download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/tuxedoshkeys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
-            download_file ${BASEDIR}/sourcelists/${UBUNTU_KEYNAME} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
+            download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
 
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
 
@@ -414,6 +419,7 @@ task_repository() {
 
     rm -rf "$tmp"
 }
+
 task_repository_test() {
     case "$lsb_dist_id" in
         Ubuntu)
@@ -424,7 +430,6 @@ task_repository_test() {
             [ -s /etc/zypp/repos.d/repo-nvidia-tuxedo.repo ] || return 1
             ;;
     esac
-}
 
     echo "repository keys successfully installed!"
     return 0
