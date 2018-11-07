@@ -90,7 +90,7 @@ case "$lsb_dist_id" in
         refresh_cmd="apt-get $apt_opts update"
         clean_cmd="apt-get -y clean"
         ;;
-    openSUSE)
+    openSUSE*|SUSE*)
         install_cmd="zypper $zypper_opts install -l"
         upgrade_cmd="zypper $zypper_opts update -l"
         refresh_cmd="zypper $zypper_opts refresh"
@@ -132,7 +132,7 @@ pkg_is_installed() {
         Ubuntu)
             [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" = "install ok installed" ]
             ;;
-        openSUSE)
+        openSUSE*|SUSE*)
             rpm -q "$1" >/dev/null
             ;;
     esac
@@ -218,7 +218,7 @@ task_nvidia() {
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             fi
             ;;
-        openSUSE)
+        openSUSE*|SUSE*)
             if $(lspci -nd '10de:' | grep -q '030[02]:' && lspci -nd '8086:' | grep -q '0300:'); then
                 $install_cmd nvidia-computeG04 nvidia-gfxG04-kmp-default nvidia-glG04 x11-video-nvidiaG04 suse-prime
                 sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' /etc/X11/xdm/Xsetup
@@ -239,7 +239,7 @@ task_nvidia_test() {
         Ubuntu)
             pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-381
             ;;
-        openSUSE*)
+        openSUSE*|SUSE*)
             pkg_is_installed nvidia-computeG04
             ;;
     esac
@@ -250,7 +250,7 @@ task_fingerprint() {
         Ubuntu)
             $install_cmd libfprint0 libpam-fprintd fprint-demo
             ;;
-        openSUSE)
+        openSUSE*|SUSE*)
             $install_cmd libfprint0 pam_fprint
             ;;
     esac
@@ -258,15 +258,15 @@ task_fingerprint() {
 
 task_fingerprint_test() {
     case "$lsb_dist_id" in
-        Ubuntu)   pkg_is_installed fprint-demo && pkg_is_installed libfprint0;;
-        openSUSE) pkg_is_installed libfprint0;;
+        Ubuntu)          pkg_is_installed fprint-demo && pkg_is_installed libfprint0;;
+        openSUSE*|SUSE*) pkg_is_installed libfprint0;;
     esac
 }
 
 task_wallpaper() {
     case "$lsb_dist_id" in
-        Ubuntu)   $install_cmd tuxedo-wallpapers;;
-        openSUSE) $install_cmd tuxedo-one-wallpapers;;
+        Ubuntu)          $install_cmd tuxedo-wallpapers;;
+        openSUSE*|SUSE*) $install_cmd tuxedo-one-wallpapers;;
     esac
 
     if pkg_is_installed ubuntu-desktop; then
@@ -550,7 +550,7 @@ task_software() {
                 $install_cmd classicmenu-indicator
             fi
             ;;
-        openSUSE)
+        openSUSE*|SUSE*)
             if [ $product == "P65_P67RGRERA" ]; then
                 $install_cmd r8168-dkms-8.040.00-10.57.noarch
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
@@ -643,9 +643,7 @@ case "$lsb_dist_id" in
         [ "$lsb_codename" = "quantal" -o "$lsb_codename" = "raring" -o "$lsb_codename" = "nadia" -o "$lsb_codename" = "olivia" ] && do_task saucy_kernel
         has_fingerprint_reader && do_task fingerprint
         ;;
-    openSUSE*)
-        ;;
-    SUSE*)
+    openSUSE*|SUSE*)
         has_fingerprint_reader && do_task fingerprint
         ;;
 esac
