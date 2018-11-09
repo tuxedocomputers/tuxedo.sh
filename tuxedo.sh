@@ -19,7 +19,7 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Version: 3.43
+# Version: 3.43.1
 
 cd $(dirname $0) || return 0
 SCRIPTPATH=$(readlink -f "$0")
@@ -322,11 +322,11 @@ task_misc_test() {
 }
 
 download_file() {
-    sourceFilePath=$1
-    urlPath=$2
-    destination=$3
+    local sourceFilePath=$1
+    local urlPath=$2
+    local destination=$3
 
-    sourceFile=""
+    local sourceFile=""
 
     if [ -f ${sourceFilePath} ] ; then
         sourceFile=file://${sourceFilePath}
@@ -341,6 +341,10 @@ task_repository() {
     local tmp
     tmp="$(mktemp -d)"
 
+    if ! [ -x "$(command -v curl)" ]; then
+        $install_cmd curl
+    fi
+
     case "$lsb_dist_id" in
         Ubuntu)
             local UBUNTU_KEYNAME="ubuntu.pub"
@@ -348,11 +352,11 @@ task_repository() {
             local UBUNTU_REPO="tuxedo-computers.list"
             local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
 
-            download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/tuxedoshkeys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
+            download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/keys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
             download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
 
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
-
+            
             apt-key add ${UBUNTU_KEYFILE_PATH}
             ;;
         openSUSE*|SUSE*)
@@ -364,14 +368,14 @@ task_repository() {
             local SUSE_KEYFILE_PATH=${tmp}/${SUSE_KEYNAME}
             local NVIDIA_KEYFILE_PATH=${tmp}/${NVIDIA_KEYNAME}
 
-            download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
-            download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
+            download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
+            download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
       
             download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
 
-            rpmkeys --import "$SUSE_KEYFILE_PATH"
-            rpmkeys --import "$NVIDIA_KEYFILE_PATH"
+            rpmkeys --import ${SUSE_KEYFILE_PATH}
+            rpmkeys --import ${NVIDIA_KEYFILE_PATH}
             ;;
     esac
 
