@@ -19,7 +19,7 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Version: 3.43.1
+# Version: 3.43.2
 
 cd $(dirname $0) || return 0
 SCRIPTPATH=$(readlink -f "$0")
@@ -234,6 +234,7 @@ task_nvidia() {
                 sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 aif\ \[\ \-f\ /etc/X11/xinit/xinitrc\.d/prime-offload\.sh\ \]\;' /etc/X11/xdm/Xsetup
                 sed -i -e 's/Intel/modesetting/' "/etc/prime/prime-offload.sh"
                 sed -i -e 's/Driver\ \"intel\"/Driver\ \"modesetting\"/' "/etc/prime/xorg.conf"
+                sed -i -e 's/Option\ \"UseDisplayDevice\"\ \"None\"/#Option\ \"UseDisplayDevice\"\ \"None\"/' "/etc/prime/xorg.conf"
             else
                 $install_cmd dkms nvidia-computeG04 nvidia-gfxG04-kmp-default nvidia-glG04 x11-video-nvidiaG04
             fi
