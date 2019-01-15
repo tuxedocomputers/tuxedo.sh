@@ -122,7 +122,7 @@ has_fingerprint_reader() {
 
 has_threeg() {
     [ -x "$(which lsusb)" ] || $install_cmd usbutils
-    lsusb -d 12d1:1404
+    lsusb -d 12d1:15bb
 }
 
 add_apt_repository() {
@@ -472,6 +472,11 @@ task_software() {
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
             fi
+
+            if has_threeg; then
+            echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
+            echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
+	    fi
 
             wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
             wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
