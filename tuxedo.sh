@@ -304,15 +304,15 @@ task_misc() {
                 return 1
             fi
 
-            su $(logname) <<EOSU
+            sudo -u "$(logname)" -- /bin/bash <<'EOSU'
             schema="com.canonical.Unity.Lenses"
             val="['more_suggestions-amazon.scope', 'more_suggestions-u1ms.scope', 'more_suggestions-populartracks.scope', 'music-musicstore.scope', 'more_suggestions-ebay.scope', 'more_suggestions-ubuntushop.scope', 'more_suggestions-skimlinks.scope']"
 
             if gsettings writable $schema disabled-scopes; then
-                gsettings set $schema disabled-scopes "$val"
+                gsettings set "$schema" disabled-scopes "$val"
             fi
 
-            if [ "$lsb_release" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
+            if [ "$(lsb_release -sr)" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
                 gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
             fi
 EOSU
