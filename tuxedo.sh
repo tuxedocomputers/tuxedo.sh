@@ -29,6 +29,8 @@ BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
 # additional packages that should be installed
 PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
+PACKAGES_UBUNTU="laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks"
+PACKAGES_SUSE="exfat-utils fuse-exfat"
 
 error=0
 trap 'error=$(($? > $error ? $? : $error))' ERR
@@ -451,7 +453,10 @@ task_software() {
         Ubuntu)
             [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
             echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
-            $install_cmd laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks
+
+            if [ -n "$PACKAGES_UBUNTU" ]; then
+                $install_cmd $PACKAGES_UBUNTU
+            fi
 
             if [ "$lsb_release" == "15.10" ]; then
                 sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
@@ -511,11 +516,15 @@ task_software() {
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
             fi
 
-            $install_cmd  exfat-utils fuse-exfat
+            if [ -n "$PACKAGES_SUSE" ]; then
+                $install_cmd $PACKAGES_SUSE
+            fi
             ;;
     esac
 
-    $install_cmd $PACKAGES
+    if [ -n "$PACKAGES" ]; then
+        $install_cmd $PACKAGES
+    fi
 }
 
 task_software_test() {
