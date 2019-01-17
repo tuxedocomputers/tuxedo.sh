@@ -29,6 +29,8 @@ BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
 # additional packages that should be installed
 PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
+PACKAGES_UBUNTU="xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks"
+PACKAGES_SUSE="exfat-utils fuse-exfat"
 
 error=0
 trap 'error=$(($? > $error ? $? : $error))' ERR
@@ -47,7 +49,7 @@ product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/produc
 board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
 
 case $product in
-    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform) 
+    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform)
         product="U931"
         grubakt="NOGRUB"
         ;;
@@ -73,7 +75,7 @@ esac
 
 if [ "$EUID" -ne 0 ]; then
     echo "You aren't 'root', but '$(whoami)'. Aren't you?!"
-    exec sudo su -c "/bin/bash '$(basename $0)'"
+    exec sudo "$0"
 fi
 
 exec 3>&1 &>tuxedo.log
@@ -302,15 +304,15 @@ task_misc() {
                 return 1
             fi
 
-            su $(logname) <<EOSU
+            sudo -u "$(logname)" -- /bin/bash <<'EOSU'
             schema="com.canonical.Unity.Lenses"
             val="['more_suggestions-amazon.scope', 'more_suggestions-u1ms.scope', 'more_suggestions-populartracks.scope', 'music-musicstore.scope', 'more_suggestions-ebay.scope', 'more_suggestions-ubuntushop.scope', 'more_suggestions-skimlinks.scope']"
 
             if gsettings writable $schema disabled-scopes; then
-                gsettings set $schema disabled-scopes "$val"
+                gsettings set "$schema" disabled-scopes "$val"
             fi
 
-            if [ "$lsb_release" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
+            if [ "$(lsb_release -sr)" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
                 gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
             fi
 EOSU
@@ -342,10 +344,6 @@ task_repository() {
     local tmp
     tmp="$(mktemp -d)"
 
-    if ! [ -x "$(command -v curl)" ]; then
-        $install_cmd curl
-    fi
-
     case "$lsb_dist_id" in
         Ubuntu)
             local UBUNTU_KEYNAME="ubuntu.pub"
@@ -357,7 +355,7 @@ task_repository() {
             download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
 
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
-            
+
             apt-key add ${UBUNTU_KEYFILE_PATH}
             ;;
         openSUSE*|SUSE*)
@@ -371,7 +369,7 @@ task_repository() {
 
             download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
-      
+
             download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
 
@@ -450,21 +448,11 @@ task_install_kernel_test() {
     return 0
 }
 
-task_software() {
+task_firmware() {
     case "$lsb_dist_id" in
         Ubuntu)
-            [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
-            echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
-            $install_cmd laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks
-
-            if [ "$lsb_release" == "15.10" ]; then
-                sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
-            fi
-
-            apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
-
             if [ $lsb_release == "16.04" ]; then
-                wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
+                download_file ${BASEDIR}/iwlwifi/iwlwifi-3160-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode /lib/firmware/iwlwifi-3160-17.ucode
             fi
 
             if [ $lsb_release == "18.04" ]; then
@@ -474,52 +462,74 @@ task_software() {
             fi
 
             if has_threeg; then
-            echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
-            echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
-	    fi
+                echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
+                echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
+            fi
 
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
-            cp iwlwifi*.ucode /lib/firmware/
-            rm -rf iwlwifi-*
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-7260-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode /lib/firmware/iwlwifi-7260-17.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-7265-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode /lib/firmware/iwlwifi-7265-17.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-7265D-21.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode /lib/firmware/iwlwifi-7265D-21.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-19.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode /lib/firmware/iwlwifi-8000C-19.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-20.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode /lib/firmware/iwlwifi-8000C-20.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-21.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode /lib/firmware/iwlwifi-8000C-21.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-22.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode /lib/firmware/iwlwifi-8000C-22.ucode
 
-            wget https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
-            wget https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin
-            wget https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin
             [ -d /lib/firmware/i915 ] || mkdir /lib/firmware/i915
-            cp kbl*.bin /lib/firmware/i915/
-            cp skl*.bin /lib/firmware/i915
-
+            download_file ${BASEDIR}/i915/kbl_dmc_ver1_01.bin https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1_01.bin
+            download_file ${BASEDIR}/i915/skl_dmc_ver1_26.bin https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1_26.bin
+            download_file ${BASEDIR}/i915/skl_guc_ver6_1.bin https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6_1.bin
             ln -sf /lib/firmware/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1.bin
             ln -sf /lib/firmware/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1.bin
             ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
-            rm -rf kbl*.bin
-            rm -rf skl*.bin
-
-            if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
-                cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
-            fi
-
-            if pkg_is_installed ubuntu-desktop; then
-                $install_cmd classicmenu-indicator
-            fi
             ;;
         openSUSE*|SUSE*)
             if [ $product == "P65_P67RGRERA" ]; then
                 $install_cmd r8168-dkms-8.040.00-10.57.noarch
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
             fi
+            ;;
+    esac
+}
 
-            $install_cmd  exfat-utils fuse-exfat
+task_firmware_test() {
+    return 0
+}
+
+task_software() {
+    case "$lsb_dist_id" in
+        Ubuntu)
+            $install_cmd laptop-mode-tools
+            [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
+            echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
+
+            if [ "$lsb_release" == "15.10" ]; then
+                sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
+            fi
+
+            if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
+                cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
+            fi
+
+            if [ -n "$PACKAGES_UBUNTU" ]; then
+                $install_cmd $PACKAGES_UBUNTU
+            fi
+
+            apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
+
+            if pkg_is_installed ubuntu-desktop; then
+                $install_cmd classicmenu-indicator
+            fi
+            ;;
+        openSUSE*|SUSE*)
+            if [ -n "$PACKAGES_SUSE" ]; then
+                $install_cmd $PACKAGES_SUSE
+            fi
             ;;
     esac
 
-    $install_cmd $PACKAGES
+    if [ -n "$PACKAGES" ]; then
+        $install_cmd $PACKAGES
+    fi
 }
 
 task_software_test() {
@@ -545,6 +555,14 @@ task_clean_test() {
     return 0
 }
 
+task_init() {
+    [ -x "$(which curl)" ] || $install_cmd curl
+}
+
+task_init_test() {
+    [ -x "$(which curl)" ]
+}
+
 do_task() {
     error=0
     printf "%-16s " "$1" >&3
@@ -562,13 +580,15 @@ do_task() {
 
 do_task clean
 do_task update
+do_task init
 do_task repository
 do_task install_kernel
 do_task grub
 has_fingerprint_reader && do_task fingerprint
 has_nvidia_gpu && do_task nvidia
-do_task wallpaper
+do_task firmware
 do_task software
+do_task wallpaper
 do_task misc
 do_task clean
 do_task update
