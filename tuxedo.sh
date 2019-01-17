@@ -29,7 +29,7 @@ BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
 # additional packages that should be installed
 PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
-PACKAGES_UBUNTU="laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks"
+PACKAGES_UBUNTU="xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks"
 PACKAGES_SUSE="exfat-utils fuse-exfat"
 
 error=0
@@ -448,22 +448,9 @@ task_install_kernel_test() {
     return 0
 }
 
-task_software() {
+task_firmware() {
     case "$lsb_dist_id" in
         Ubuntu)
-            [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
-            echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
-
-            if [ -n "$PACKAGES_UBUNTU" ]; then
-                $install_cmd $PACKAGES_UBUNTU
-            fi
-
-            if [ "$lsb_release" == "15.10" ]; then
-                sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
-            fi
-
-            apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
-
             if [ $lsb_release == "16.04" ]; then
                 wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
             fi
@@ -501,21 +488,46 @@ task_software() {
             ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
             rm -rf kbl*.bin
             rm -rf skl*.bin
-
-            if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
-                cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
-            fi
-
-            if pkg_is_installed ubuntu-desktop; then
-                $install_cmd classicmenu-indicator
-            fi
             ;;
         openSUSE*|SUSE*)
             if [ $product == "P65_P67RGRERA" ]; then
                 $install_cmd r8168-dkms-8.040.00-10.57.noarch
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
             fi
+            ;;
+    esac
+}
 
+task_firmware_test() {
+    return 0
+}
+
+task_software() {
+    case "$lsb_dist_id" in
+        Ubuntu)
+            $install_cmd laptop-mode-tools
+            [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
+            echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
+
+            if [ "$lsb_release" == "15.10" ]; then
+                sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
+            fi
+
+            if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
+                cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
+            fi
+
+            if [ -n "$PACKAGES_UBUNTU" ]; then
+                $install_cmd $PACKAGES_UBUNTU
+            fi
+
+            apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
+
+            if pkg_is_installed ubuntu-desktop; then
+                $install_cmd classicmenu-indicator
+            fi
+            ;;
+        openSUSE*|SUSE*)
             if [ -n "$PACKAGES_SUSE" ]; then
                 $install_cmd $PACKAGES_SUSE
             fi
@@ -582,6 +594,7 @@ do_task grub
 has_fingerprint_reader && do_task fingerprint
 has_nvidia_gpu && do_task nvidia
 do_task wallpaper
+do_task firmware
 do_task software
 do_task misc
 do_task clean
