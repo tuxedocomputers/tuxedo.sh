@@ -49,7 +49,7 @@ product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/produc
 board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
 
 case $product in
-    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform) 
+    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform)
         product="U931"
         grubakt="NOGRUB"
         ;;
@@ -75,7 +75,7 @@ esac
 
 if [ "$EUID" -ne 0 ]; then
     echo "You aren't 'root', but '$(whoami)'. Aren't you?!"
-    exec sudo su -c "/bin/bash '$(basename $0)'"
+    exec sudo "$0"
 fi
 
 exec 3>&1 &>tuxedo.log
@@ -355,7 +355,7 @@ task_repository() {
             download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
 
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
-            
+
             apt-key add ${UBUNTU_KEYFILE_PATH}
             ;;
         openSUSE*|SUSE*)
@@ -369,7 +369,7 @@ task_repository() {
 
             download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
-      
+
             download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
 
@@ -462,9 +462,9 @@ task_firmware() {
             fi
 
             if has_threeg; then
-            echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
-            echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
-	    fi
+                echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
+                echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
+            fi
 
             download_file ${BASEDIR}/iwlwifi/iwlwifi-7260-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode /lib/firmware/iwlwifi-7260-17.ucode
             download_file ${BASEDIR}/iwlwifi/iwlwifi-7265-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode /lib/firmware/iwlwifi-7265-17.ucode
@@ -586,9 +586,9 @@ do_task install_kernel
 do_task grub
 has_fingerprint_reader && do_task fingerprint
 has_nvidia_gpu && do_task nvidia
-do_task wallpaper
 do_task firmware
 do_task software
+do_task wallpaper
 do_task misc
 do_task clean
 do_task update
