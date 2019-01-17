@@ -342,10 +342,6 @@ task_repository() {
     local tmp
     tmp="$(mktemp -d)"
 
-    if ! [ -x "$(command -v curl)" ]; then
-        $install_cmd curl
-    fi
-
     case "$lsb_dist_id" in
         Ubuntu)
             local UBUNTU_KEYNAME="ubuntu.pub"
@@ -545,6 +541,14 @@ task_clean_test() {
     return 0
 }
 
+task_init() {
+    [ -x "$(which curl)" ] || $install_cmd curl
+}
+
+task_init_test() {
+    [ -x "$(which curl)" ]
+}
+
 do_task() {
     error=0
     printf "%-16s " "$1" >&3
@@ -562,6 +566,7 @@ do_task() {
 
 do_task clean
 do_task update
+do_task init
 do_task repository
 do_task install_kernel
 do_task grub
