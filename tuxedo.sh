@@ -452,7 +452,7 @@ task_firmware() {
     case "$lsb_dist_id" in
         Ubuntu)
             if [ $lsb_release == "16.04" ]; then
-                wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
+                download_file ${BASEDIR}/iwlwifi/iwlwifi-3160-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode /lib/firmware/iwlwifi-3160-17.ucode
             fi
 
             if [ $lsb_release == "18.04" ]; then
@@ -466,28 +466,21 @@ task_firmware() {
             echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
 	    fi
 
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
-            cp iwlwifi*.ucode /lib/firmware/
-            rm -rf iwlwifi-*
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-7260-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode /lib/firmware/iwlwifi-7260-17.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-7265-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode /lib/firmware/iwlwifi-7265-17.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-7265D-21.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode /lib/firmware/iwlwifi-7265D-21.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-19.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode /lib/firmware/iwlwifi-8000C-19.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-20.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode /lib/firmware/iwlwifi-8000C-20.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-21.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode /lib/firmware/iwlwifi-8000C-21.ucode
+            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-22.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode /lib/firmware/iwlwifi-8000C-22.ucode
 
-            wget https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
-            wget https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin
-            wget https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin
             [ -d /lib/firmware/i915 ] || mkdir /lib/firmware/i915
-            cp kbl*.bin /lib/firmware/i915/
-            cp skl*.bin /lib/firmware/i915
-
+            download_file ${BASEDIR}/i915/kbl_dmc_ver1_01.bin https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1_01.bin
+            download_file ${BASEDIR}/i915/skl_dmc_ver1_26.bin https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1_26.bin
+            download_file ${BASEDIR}/i915/skl_guc_ver6_1.bin https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6_1.bin
             ln -sf /lib/firmware/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1.bin
             ln -sf /lib/firmware/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1.bin
             ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
-            rm -rf kbl*.bin
-            rm -rf skl*.bin
             ;;
         openSUSE*|SUSE*)
             if [ $product == "P65_P67RGRERA" ]; then
