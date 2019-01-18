@@ -71,6 +71,11 @@ case $board in
     *) : ;;
 esac
 
+case $boardfan in
+    P9*) zfix="fanfix";;
+    *) : ;;
+esac
+
 if [ "$EUID" -ne 0 ]; then
     echo "You aren't 'root', but '$(whoami)'. Aren't you?!"
     exec sudo su -c "/bin/bash '$(basename $0)'"
@@ -471,11 +476,14 @@ task_software() {
                 if [ $fix == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
+                if [ $zfix == "fanfix" ]; then
+                    $install_cmd tuxedofancontrol
+                fi
             fi
 
             if has_threeg; then
-            echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
-            echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
+                echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
+                echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
 	    fi
 
             wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
