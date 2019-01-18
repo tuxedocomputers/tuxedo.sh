@@ -68,11 +68,7 @@ esac
 
 case $board in
     P95*) fix="audiofix";;
-    *) : ;;
-esac
-
-case $boardfan in
-    P9*) zfix="fanfix";;
+    P9*) fix="fanfix";;
     *) : ;;
 esac
 
@@ -476,7 +472,7 @@ task_software() {
                 if [ $fix == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
-                if [ $zfix == "fanfix" ]; then
+                if [ $fix == "fanfix" ]; then
                     $install_cmd tuxedofancontrol
                 fi
             fi
