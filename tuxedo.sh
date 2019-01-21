@@ -21,9 +21,9 @@
 
 # Version: 3.43.2
 
-cd $(dirname $0) || return 0
-SCRIPTPATH=$(readlink -f "$0")
-BASEDIR=$(dirname "$SCRIPTPATH")
+cd "$(dirname "$0")" || return 0
+SCRIPTPATH="$(readlink -f "$0")"
+BASEDIR="$(dirname "$SCRIPTPATH")"
 
 BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
@@ -32,43 +32,43 @@ PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomat
 PACKAGES_UBUNTU="xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks"
 PACKAGES_SUSE="exfat-utils fuse-exfat"
 
-error=0
-trap 'error=$(($? > $error ? $? : $error))' ERR
+ERROR=0
+trap 'ERROR=$(($? > $ERROR ? $? : $ERROR))' ERR
 set errtrace
 xset s off
 xset -dpms
 
-lsb_dist_id="$(lsb_release -si)"   # e.g. 'Ubuntu', 'LinuxMint', 'openSUSE project'
-lsb_release="$(lsb_release -sr)"   # e.g. '13.04', '15', '12.3'
-lsb_codename="$(lsb_release -sc)"  # e.g. 'raring', 'olivia', 'Dartmouth'
+LSB_DIST_ID="$(lsb_release -si)"   # e.g. 'Ubuntu', 'LinuxMint', 'openSUSE project'
+LSB_RELEASE="$(lsb_release -sr)"   # e.g. '13.04', '15', '12.3'
+LSB_CODENAME="$(lsb_release -sc)"  # e.g. 'raring', 'olivia', 'Dartmouth'
 
-apt_opts='-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew --fix-missing'
-zypper_opts='-n'
+APT_OPTS='-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew --fix-missing'
+ZYPPER_OPTS='-n'
 
-product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/product_name" | tr ' ,/-' '_')" # e.g. 'U931'
-board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
+PRODUCT="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/product_name" | tr ' ,/-' '_')" # e.g. 'U931'
+BOARD="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
 
-case $product in
+case "$PRODUCT" in
     U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform)
-        product="U931"
-        grubakt="NOGRUB"
+        PRODUCT="U931"
+        GRUB_TYPE="NOGRUB"
         ;;
     P65_67RS*|P65_67RP*|P65xRP|P67xRP|P65xH*|P65_P67H*)
-        grubakt="02GRUB"
+        GRUB_TYPE="02GRUB"
         ;;
     P7xxDM*)
-        grubakt="NOGRUB"
+        GRUB_TYPE="NOGRUB"
         ;;
     P7xxTM*)
-        grubakt="03GRUB"
+        GRUB_TYPE="03GRUB"
         ;;
     P775DM3*)
-        grubakt="01GRUB"
+        GRUB_TYPE="01GRUB"
         ;;
     *) : ;;
 esac
 
-case $board in
+case "$BOARD" in
     P95*) fix="audiofix";;
     *) : ;;
 esac
@@ -84,24 +84,24 @@ if hash xterm 2>/dev/null; then
     exec xterm -geometry 150x50 -e tail -f tuxedo.log &
 fi
 
-echo "$(basename $0)"
+echo "$(basename "$0")"
 lsb_release -a
 
-case "$lsb_dist_id" in
+case "$LSB_DIST_ID" in
     Ubuntu)
-        install_cmd="apt-get $apt_opts install"
-        upgrade_cmd="apt-get $apt_opts dist-upgrade"
-        refresh_cmd="apt-get $apt_opts update"
+        install_cmd="apt-get $APT_OPTS install"
+        upgrade_cmd="apt-get $APT_OPTS dist-upgrade"
+        refresh_cmd="apt-get $APT_OPTS update"
         clean_cmd="apt-get -y clean"
         ;;
     openSUSE*|SUSE*)
-        install_cmd="zypper $zypper_opts install -l"
-        upgrade_cmd="zypper $zypper_opts update -l"
-        refresh_cmd="zypper $zypper_opts refresh"
-        clean_cmd="zypper $zypper_opts clean --all"
+        install_cmd="zypper $ZYPPER_OPTS install -l"
+        upgrade_cmd="zypper $ZYPPER_OPTS update -l"
+        refresh_cmd="zypper $ZYPPER_OPTS refresh"
+        clean_cmd="zypper $ZYPPER_OPTS clean --all"
         ;;
     *)
-        echo "Unknown Distribution: '$lsb_dist_id'"
+        echo "Unknown Distribution: '$LSB_DIST_ID'"
         ;;
 esac
 
@@ -132,9 +132,9 @@ add_apt_repository() {
 }
 
 pkg_is_installed() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
-            [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" = "install ok installed" ]
+            [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" == "install ok installed" ]
             ;;
         openSUSE*|SUSE*)
             rpm -q "$1" >/dev/null
@@ -143,58 +143,58 @@ pkg_is_installed() {
 }
 
 task_grub() {
-    local default_grub=/etc/default/grub
+    local DEFAULT_GRUB="/etc/default/grub"
 
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
-            case "$grubakt" in
+            case "$GRUB_TYPE" in
                 01GRUB)
-                    grub_options=("acpi_osi=Linux" "acpi_backlight=vendor")
+                    GRUB_OPTIONS=("acpi_osi=Linux" "acpi_backlight=vendor")
                     ;;
                 02GRUB)
-                    grub_options=("acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
+                    GRUB_OPTIONS=("acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
                     ;;
                 03GRUB)
-                    grub_options=("acpi_osi=" "acpi_os_name=Linux")
+                    GRUB_OPTIONS=("acpi_osi=" "acpi_os_name=Linux")
                     ;;
                 *)
-                    grub_options=("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
+                    GRUB_OPTIONS=("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
                     ;;
             esac
 
-            for option in ${grub_options[*]}; do
-                if ! grep -q $option "$default_grub"; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 '"$option"'"/' $default_grub
+            for OPTION in ${GRUB_OPTIONS[*]}; do
+                if ! grep -q "$OPTION" "$DEFAULT_GRUB"; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 '"$OPTION"'"/' "$DEFAULT_GRUB"
                 fi
             done
 
             if has_nvidia_gpu; then
-                sed -i '/^GRUB_CMDLINE_LINUX=/ s/nomodeset//' $default_grub
+                sed -i '/^GRUB_CMDLINE_LINUX=/ s/nomodeset//' "$DEFAULT_GRUB"
             fi
 
-            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT.*/,1 aGRUB_GFXPAYLOAD_LINUX=1920*1080' $default_grub
+            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT.*/,1 aGRUB_GFXPAYLOAD_LINUX=1920*1080' "$DEFAULT_GRUB"
             update-grub
             ;;
 
         openSUSE*|SUSE*)
-            case "$grubakt" in
+            case "$GRUB_TYPE" in
                 01GRUB)
-                    grub_options=("loglevel=0" "acpi_osi=Linux" "acpi_backlight=vendor")
+                    GRUB_OPTIONS=("loglevel=0" "acpi_osi=Linux" "acpi_backlight=vendor")
                     ;;
                 02GRUB)
-                    grub_options=("loglevel=0" "acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
+                    GRUB_OPTIONS=("loglevel=0" "acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
                     ;;
                 03GRUB)
-                    grub_options=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux")
+                    GRUB_OPTIONS=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux")
                     ;;
                 *)
-                    grub_options=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
+                    GRUB_OPTIONS=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
                     ;;
             esac
 
-            for option in ${grub_options[*]}; do
-                if ! grep -q $option "$default_grub"; then
-                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 '"$option"'"/' $default_grub
+            for OPTION in ${GRUB_OPTIONS[*]}; do
+                if ! grep -q "$OPTION" "$DEFAULT_GRUB"; then
+                    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/"\(.*\)"/"\1 '"$OPTION"'"/' "$DEFAULT_GRUB"
                 fi
             done
 
@@ -208,15 +208,15 @@ task_grub_test() {
 }
 
 task_nvidia() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
-            if [ "$lsb_release" == "16.04" ]; then
+            if [ "$LSB_RELEASE" == "16.04" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
-            elif [ "$lsb_release" == "16.10" ]; then
+            elif [ "$LSB_RELEASE" == "16.10" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
-            elif [ "$lsb_release" == "17.04" ]; then
+            elif [ "$LSB_RELEASE" == "17.04" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
-            elif [ "$lsb_release" == "18.04" ]; then
+            elif [ "$LSB_RELEASE" == "18.04" ]; then
                 $install_cmd nvidia-driver-390 mesa-utils nvidia-prime vdpau-va-driver python-appindicator python-cairo python-gtk2
             else
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
@@ -228,12 +228,12 @@ task_nvidia() {
                 update-alternatives --set default-displaymanager /usr/lib/X11/displaymanagers/lightdm
             fi
 
-            if $(lspci -nd '10de:' | grep -q '030[02]:' && lspci -nd '8086:' | grep -q '0300:'); then
+            if lspci -nd '10de:' | grep -q '030[02]:' && lspci -nd '8086:' | grep -q '0300:'; then
                 $install_cmd nvidia-computeG04 nvidia-gfxG04-kmp-default nvidia-glG04 x11-video-nvidiaG04 suse-prime
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' /etc/X11/xdm/Xsetup
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 a\.\/etc\/X11\/xinit\/xinitrc\.d\/prime-offload\.sh' /etc/X11/xdm/Xsetup
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 athen' /etc/X11/xdm/Xsetup
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 aif\ \[\ \-f\ /etc/X11/xinit/xinitrc\.d/prime-offload\.sh\ \]\;' /etc/X11/xdm/Xsetup
+                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' "/etc/X11/xdm/Xsetup"
+                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 a\.\/etc\/X11\/xinit\/xinitrc\.d\/prime-offload\.sh' "/etc/X11/xdm/Xsetup"
+                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 athen' "/etc/X11/xdm/Xsetup"
+                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 aif\ \[\ \-f\ /etc/X11/xinit/xinitrc\.d/prime-offload\.sh\ \]\;' "/etc/X11/xdm/Xsetup"
                 sed -i -e 's/Intel/modesetting/' "/etc/prime/prime-offload.sh"
                 sed -i -e 's/Driver\ \"intel\"/Driver\ \"modesetting\"/' "/etc/prime/xorg.conf"
                 sed -i -e 's/Option\ \"UseDisplayDevice\"\ \"None\"/#Option\ \"UseDisplayDevice\"\ \"None\"/' "/etc/prime/xorg.conf"
@@ -245,7 +245,7 @@ task_nvidia() {
 }
 
 task_nvidia_test() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
             pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-381
             ;;
@@ -256,7 +256,7 @@ task_nvidia_test() {
 }
 
 task_fingerprint() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
             $install_cmd libfprint0 libpam-fprintd fprint-demo
             ;;
@@ -267,28 +267,28 @@ task_fingerprint() {
 }
 
 task_fingerprint_test() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)          pkg_is_installed fprint-demo && pkg_is_installed libfprint0;;
         openSUSE*|SUSE*) pkg_is_installed libfprint0;;
     esac
 }
 
 task_wallpaper() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)          $install_cmd tuxedo-wallpapers;;
         openSUSE*|SUSE*) $install_cmd tuxedo-one-wallpapers;;
     esac
 
     if pkg_is_installed ubuntu-desktop; then
-        local filename="30_tuxedo-settings.gschema.override"
-        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
+        local FILENAME="30_tuxedo-settings.gschema.override"
+        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
         glib-compile-schemas /usr/share/glib-2.0/schemas
     elif pkg_is_installed kubuntu-desktop; then
-        local filename="80-tuxedo.js"
-        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
+        local FILENAME="80-tuxedo.js"
+        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
     elif pkg_is_installed xubuntu-desktop; then
-        local filename="xfce4-desktop.xml"
-        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
+        local FILENAME="xfce4-desktop.xml"
+        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
     fi
 }
 
@@ -297,7 +297,7 @@ task_wallpaper_test() {
 }
 
 task_misc() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
             if ! [ -x "$(which gsettings)" ]; then
                 echo "gsettings not found or not executable. Skipping misc!"
@@ -308,7 +308,7 @@ task_misc() {
             schema="com.canonical.Unity.Lenses"
             val="['more_suggestions-amazon.scope', 'more_suggestions-u1ms.scope', 'more_suggestions-populartracks.scope', 'music-musicstore.scope', 'more_suggestions-ebay.scope', 'more_suggestions-ubuntushop.scope', 'more_suggestions-skimlinks.scope']"
 
-            if gsettings writable $schema disabled-scopes; then
+            if gsettings writable "$schema" disabled-scopes; then
                 gsettings set "$schema" disabled-scopes "$val"
             fi
 
@@ -325,38 +325,36 @@ task_misc_test() {
 }
 
 download_file() {
-    local sourceFilePath=$1
-    local urlPath=$2
-    local destination=$3
+    local SOURCE_FILE="$1"
+    local SOURCE_URL="$2"
+    local TARGET="$3"
 
-    local sourceFile=""
-
-    if [ -f ${sourceFilePath} ] ; then
-        sourceFile=file://${sourceFilePath}
+    local SOURCE=""
+    if [ -f "$SOURCE_FILE" ] ; then
+        SOURCE="file://$SOURCE_FILE"
     else
-        sourceFile=${urlPath}
+        SOURCE="$SOURCE_URL"
     fi
 
-    curl -o- ${sourceFile} > ${destination}
+    curl -o- "$SOURCE" > "$TARGET"
 }
 
 task_repository() {
-    local tmp
-    tmp="$(mktemp -d)"
+    local REPO_TMP="$(mktemp -d)"
 
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
             local UBUNTU_KEYNAME="ubuntu.pub"
-            local UBUNTU_KEYFILE_PATH=${tmp}/${UBUNTU_KEYNAME}
+            local UBUNTU_KEYFILE_PATH="$REPO_TMP/$UBUNTU_KEYNAME"
             local UBUNTU_REPO="tuxedo-computers.list"
             local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
 
-            download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/keys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
-            download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
+            download_file "$BASEDIR/keys/$UBUNTU_KEYNAME" "$BASE_URL/keys/$UBUNTU_KEYNAME" "$UBUNTU_KEYFILE_PATH"
+            download_file"$BASEDIR/sourcelists/$UBUNTU_REPO" "$BASE_URL/sourcelists/$UBUNTU_REPO" "$UBUNTU_REPO_FILEPATH"
 
-            sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
+            sed -e 's/\${lsb_codename}/'"$LSB_CODENAME"'/g' "$UBUNTU_REPO_FILEPATH" > "$UBUNTU_REPO_FILEPATH.bak" && mv "$UBUNTU_REPO_FILEPATH.bak" "$UBUNTU_REPO_FILEPATH"
 
-            apt-key add ${UBUNTU_KEYFILE_PATH}
+            apt-key add "$UBUNTU_KEYFILE_PATH"
             ;;
         openSUSE*|SUSE*)
             local SUSE_KEYNAME="suse.pub"
@@ -364,25 +362,25 @@ task_repository() {
             local SUSE_ISV_REPO="repo-isv-tuxedo.repo"
             local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
 
-            local SUSE_KEYFILE_PATH=${tmp}/${SUSE_KEYNAME}
-            local NVIDIA_KEYFILE_PATH=${tmp}/${NVIDIA_KEYNAME}
+            local SUSE_KEYFILE_PATH="$REPO_TMP/$SUSE_KEYNAME"
+            local NVIDIA_KEYFILE_PATH="$REPO_TMP/$NVIDIA_KEYNAME"
 
-            download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
-            download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
+            download_file "$BASEDIR/keys/$SUSE_KEYNAME" "$BASE_URL/keys/$SUSE_KEYNAME" "$SUSE_KEYFILE_PATH"
+            download_file "$BASEDIR/keys/$NVIDIA_KEYNAME" "$BASE_URL/keys/$NVIDIA_KEYNAME" "$NVIDIA_KEYFILE_PATH"
 
-            download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
-            download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
+            download_file "$BASEDIR/sourcelists/$SUSE_ISV_REPO" "$BASE_URL/sourcelists/$SUSE_ISV_REPO" "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
+            download_file "$BASEDIR/sourcelists/$SUSE_NVIDIA_REPO" "$BASE_URL/sourcelists/$SUSE_NVIDIA_REPO" "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
 
-            rpmkeys --import ${SUSE_KEYFILE_PATH}
-            rpmkeys --import ${NVIDIA_KEYFILE_PATH}
+            rpmkeys --import "$SUSE_KEYFILE_PATH"
+            rpmkeys --import "$NVIDIA_KEYFILE_PATH"
             ;;
     esac
 
-    rm -rf "$tmp"
+    rm -rf "$REPO_TMP"
 }
 
 task_repository_test() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
             apt-key list|grep -q TUXEDO || return 1
             ;;
@@ -408,9 +406,9 @@ task_update_test() {
 task_install_kernel() {
     $refresh_cmd
     $upgrade_cmd
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
-            case "$lsb_codename" in
+            case "$LSB_CODENAME" in
                 xenial)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
                 zesty)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
@@ -420,7 +418,7 @@ task_install_kernel() {
             esac
             ;;
         openSUSE*|SUSE*)
-            case "$lsb_release" in
+            case "$LSB_RELEASE" in
                 42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
                 *)    : ;;
             esac
@@ -429,9 +427,9 @@ task_install_kernel() {
 }
 
 task_install_kernel_test() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
-            case "$lsb_codename" in
+            case "$LSB_CODENAME" in
                 xenial)  pkg_is_installed linux-generic;;
                 yakkety) pkg_is_installed linux-image-4.11.8-041108-generic;;
                 zesty)   pkg_is_installed linux-image-generic;;
@@ -449,14 +447,14 @@ task_install_kernel_test() {
 }
 
 task_firmware() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
-            if [ $lsb_release == "16.04" ]; then
-                download_file ${BASEDIR}/iwlwifi/iwlwifi-3160-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode /lib/firmware/iwlwifi-3160-17.ucode
+            if [ "$LSB_RELEASE" == "16.04" ]; then
+                download_file "$BASEDIR/iwlwifi/iwlwifi-3160-17.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode" "/lib/firmware/iwlwifi-3160-17.ucode"
             fi
 
-            if [ $lsb_release == "18.04" ]; then
-                if [ $fix == "audiofix" ]; then
+            if [ "$LSB_RELEASE" == "18.04" ]; then
+                if [ "$fix" == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
             fi
@@ -466,24 +464,24 @@ task_firmware() {
                 echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
             fi
 
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-7260-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode /lib/firmware/iwlwifi-7260-17.ucode
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-7265-17.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode /lib/firmware/iwlwifi-7265-17.ucode
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-7265D-21.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode /lib/firmware/iwlwifi-7265D-21.ucode
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-19.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode /lib/firmware/iwlwifi-8000C-19.ucode
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-20.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode /lib/firmware/iwlwifi-8000C-20.ucode
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-21.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode /lib/firmware/iwlwifi-8000C-21.ucode
-            download_file ${BASEDIR}/iwlwifi/iwlwifi-8000C-22.ucode https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode /lib/firmware/iwlwifi-8000C-22.ucode
+            download_file "$BASEDIR/iwlwifi/iwlwifi-7260-17.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode" "/lib/firmware/iwlwifi-7260-17.ucode"
+            download_file "$BASEDIR/iwlwifi/iwlwifi-7265-17.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode" "/lib/firmware/iwlwifi-7265-17.ucode"
+            download_file "$BASEDIR/iwlwifi/iwlwifi-7265D-21.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode" "/lib/firmware/iwlwifi-7265D-21.ucode"
+            download_file "$BASEDIR/iwlwifi/iwlwifi-8000C-19.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode" "/lib/firmware/iwlwifi-8000C-19.ucode"
+            download_file "$BASEDIR/iwlwifi/iwlwifi-8000C-20.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode" "/lib/firmware/iwlwifi-8000C-20.ucode"
+            download_file "$BASEDIR/iwlwifi/iwlwifi-8000C-21.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode" "/lib/firmware/iwlwifi-8000C-21.ucode"
+            download_file "$BASEDIR/iwlwifi/iwlwifi-8000C-22.ucode" "https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode" "/lib/firmware/iwlwifi-8000C-22.ucode"
 
             [ -d /lib/firmware/i915 ] || mkdir /lib/firmware/i915
-            download_file ${BASEDIR}/i915/kbl_dmc_ver1_01.bin https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1_01.bin
-            download_file ${BASEDIR}/i915/skl_dmc_ver1_26.bin https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1_26.bin
-            download_file ${BASEDIR}/i915/skl_guc_ver6_1.bin https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6_1.bin
-            ln -sf /lib/firmware/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1.bin
-            ln -sf /lib/firmware/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1.bin
-            ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
+            download_file "$BASEDIR/i915/kbl_dmc_ver1_01.bin" "https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin" "/lib/firmware/i915/kbl_dmc_ver1_01.bin"
+            download_file "$BASEDIR/i915/skl_dmc_ver1_26.bin" "https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin" "/lib/firmware/i915/skl_dmc_ver1_26.bin"
+            download_file "$BASEDIR/i915/skl_guc_ver6_1.bin" "https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin" "/lib/firmware/i915/skl_guc_ver6_1.bin"
+            ln -sf "/lib/firmware/i915/kbl_dmc_ver1_01.bin" "/lib/firmware/i915/kbl_dmc_ver1.bin"
+            ln -sf "/lib/firmware/i915/skl_dmc_ver1_26.bin" "/lib/firmware/i915/skl_dmc_ver1.bin"
+            ln -sf "/lib/firmware/i915/skl_guc_ver6_1.bin" "/lib/firmware/i915/skl_guc_ver6.bin"
             ;;
         openSUSE*|SUSE*)
-            if [ $product == "P65_P67RGRERA" ]; then
+            if [ "$PRODUCT" == "P65_P67RGRERA" ]; then
                 $install_cmd r8168-dkms-8.040.00-10.57.noarch
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
             fi
@@ -496,13 +494,13 @@ task_firmware_test() {
 }
 
 task_software() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu)
             $install_cmd laptop-mode-tools
             [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
             echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
 
-            if [ "$lsb_release" == "15.10" ]; then
+            if [ "$LSB_RELEASE" == "15.10" ]; then
                 sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
             fi
 
@@ -533,14 +531,14 @@ task_software() {
 }
 
 task_software_test() {
-    case "$lsb_dist_id" in
+    case "$LSB_DIST_ID" in
         Ubuntu|LinuxMint|elementary*)
             pkg_is_installed laptop-mode-tools || return 1
             ;;
     esac
 
-    for p in $PACKAGES; do
-        pkg_is_installed "$p" || return 1
+    for PACKAGE in $PACKAGES; do
+        pkg_is_installed "$PACKAGE" || return 1
     done
 
     return 0
@@ -567,9 +565,9 @@ do_task() {
     error=0
     printf "%-16s " "$1" >&3
     echo "Calling task $1"
-    task_$1
+    task_${1}
 
-    if [ $error -eq 0 ] && task_${1}_test; then
+    if [ $ERROR -eq 0 ] && task_${1}_test; then
         echo -e "\e[1;32mOK\e[0m" >&3
         echo "Task $1 OK"
     else
