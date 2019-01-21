@@ -28,9 +28,9 @@ BASEDIR="$(dirname "$SCRIPTPATH")"
 BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
 # additional packages that should be installed
-PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
-PACKAGES_UBUNTU="xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks"
-PACKAGES_SUSE="exfat-utils fuse-exfat"
+PACKAGES=""
+PACKAGES_UBUNTU=""
+PACKAGES_SUSE=""
 
 ERROR=0
 trap 'ERROR=$(($? > $ERROR ? $? : $ERROR))' ERR
@@ -467,6 +467,8 @@ task_firmware() {
             ln -sf "/lib/firmware/i915/kbl_dmc_ver1_01.bin" "/lib/firmware/i915/kbl_dmc_ver1.bin"
             ln -sf "/lib/firmware/i915/skl_dmc_ver1_26.bin" "/lib/firmware/i915/skl_dmc_ver1.bin"
             ln -sf "/lib/firmware/i915/skl_guc_ver6_1.bin" "/lib/firmware/i915/skl_guc_ver6.bin"
+
+            $install_cmd r8168-dkms mesa-utils
             ;;
         openSUSE*|SUSE*)
             if [ "$PRODUCT" == "P65_P67RGRERA" ]; then
@@ -484,9 +486,7 @@ task_firmware_test() {
 task_software() {
     case "$LSB_DIST_ID" in
         Ubuntu)
-            $install_cmd laptop-mode-tools
-            [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
-            echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
+            $install_cmd tlp
 
             if [ "$LSB_RELEASE" == "15.10" ]; then
                 sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
@@ -500,11 +500,7 @@ task_software() {
                 $install_cmd $PACKAGES_UBUNTU
             fi
 
-            $remove_cmd unity-webapps-common app-install-data-partner apport ureadahead
-
-            if pkg_is_installed ubuntu-desktop; then
-                $install_cmd classicmenu-indicator
-            fi
+            $remove_cmd unity-webapps-common app-install-data-partner ubuntu-web-launchers apport apport-symptoms
             ;;
         openSUSE*|SUSE*)
             if [ -n "$PACKAGES_SUSE" ]; then
@@ -521,7 +517,7 @@ task_software() {
 task_software_test() {
     case "$LSB_DIST_ID" in
         Ubuntu|LinuxMint|elementary*)
-            pkg_is_installed laptop-mode-tools || return 1
+            pkg_is_installed tlp || return 1
             ;;
     esac
 
