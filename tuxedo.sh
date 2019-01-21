@@ -90,12 +90,14 @@ lsb_release -a
 case "$LSB_DIST_ID" in
     Ubuntu)
         install_cmd="apt-get $APT_OPTS install"
+        remove_cmd="apt-get $APT_OPTS remove --purge --auto-remove"
         upgrade_cmd="apt-get $APT_OPTS dist-upgrade"
         refresh_cmd="apt-get $APT_OPTS update"
         clean_cmd="apt-get -y clean"
         ;;
     openSUSE*|SUSE*)
         install_cmd="zypper $ZYPPER_OPTS install -l"
+        remove_cmd="zypper $ZYPPER_OPTS remove -u"
         upgrade_cmd="zypper $ZYPPER_OPTS update -l"
         refresh_cmd="zypper $ZYPPER_OPTS refresh"
         clean_cmd="zypper $ZYPPER_OPTS clean --all"
@@ -109,14 +111,6 @@ has_nvidia_gpu() {
     lspci -nd 10de: | grep -q '030[02]:'
 }
 
-has_skylake_cpu() {
-    lspci -nd 8086: | grep -q '19[01][048cf]'
-}
-
-has_kabylake_cpu() {
-    [ "$(cat /proc/cpuinfo | grep -i "model name" | awk -F"-" '{print $2}' | head -1 | cut -c1)" = "7" ]
-}
-
 has_fingerprint_reader() {
     [ -x "$(which lsusb)" ] || $install_cmd usbutils
     lsusb -d 0483: || lsusb -d 147e: || lsusb -d 12d1: || lsusb -d 1c7a:0603
@@ -125,10 +119,6 @@ has_fingerprint_reader() {
 has_threeg() {
     [ -x "$(which lsusb)" ] || $install_cmd usbutils
     lsusb -d 12d1:15bb
-}
-
-add_apt_repository() {
-    add-apt-repository -y $1
 }
 
 pkg_is_installed() {
@@ -352,7 +342,7 @@ task_repository() {
             download_file "$BASEDIR/keys/$UBUNTU_KEYNAME" "$BASE_URL/keys/$UBUNTU_KEYNAME" "$UBUNTU_KEYFILE_PATH"
             download_file"$BASEDIR/sourcelists/$UBUNTU_REPO" "$BASE_URL/sourcelists/$UBUNTU_REPO" "$UBUNTU_REPO_FILEPATH"
 
-            sed -e 's/\${lsb_codename}/'"$LSB_CODENAME"'/g' "$UBUNTU_REPO_FILEPATH" > "$UBUNTU_REPO_FILEPATH.bak" && mv "$UBUNTU_REPO_FILEPATH.bak" "$UBUNTU_REPO_FILEPATH"
+            sed -i -e 's/\${lsb_codename}/'"$LSB_CODENAME"'/g' "$UBUNTU_REPO_FILEPATH"
 
             apt-key add "$UBUNTU_KEYFILE_PATH"
             ;;
@@ -404,8 +394,6 @@ task_update_test() {
 }
 
 task_install_kernel() {
-    $refresh_cmd
-    $upgrade_cmd
     case "$LSB_DIST_ID" in
         Ubuntu)
             case "$LSB_CODENAME" in
@@ -512,7 +500,7 @@ task_software() {
                 $install_cmd $PACKAGES_UBUNTU
             fi
 
-            apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
+            $remove_cmd unity-webapps-common app-install-data-partner apport ureadahead
 
             if pkg_is_installed ubuntu-desktop; then
                 $install_cmd classicmenu-indicator
@@ -546,7 +534,7 @@ task_software_test() {
 
 task_clean() {
     $clean_cmd
-    find /var/lib/apt/lists -type f -exec rm -fv {} \; 2>/dev/null
+    find /var/lib/apt/lists -type f -not -name 'lock' -exec rm -fv {} \; 2>/dev/null
 }
 
 task_clean_test() {
@@ -580,6 +568,7 @@ do_task clean
 do_task update
 do_task init
 do_task repository
+do_task update
 do_task install_kernel
 do_task grub
 has_fingerprint_reader && do_task fingerprint
