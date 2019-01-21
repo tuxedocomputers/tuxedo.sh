@@ -162,7 +162,7 @@ task_grub() {
                 sed -i '/^GRUB_CMDLINE_LINUX=/ s/nomodeset//' "$DEFAULT_GRUB"
             fi
 
-            sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT.*/,1 aGRUB_GFXPAYLOAD_LINUX=1920*1080' "$DEFAULT_GRUB"
+            sed -i '/^GRUB_CMDLINE_LINUX=/,1 aGRUB_GFXPAYLOAD_LINUX=1920*1080' "$DEFAULT_GRUB"
             update-grub
             ;;
 
