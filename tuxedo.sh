@@ -107,6 +107,47 @@ case "$LSB_DIST_ID" in
         ;;
 esac
 
+do_task() {
+    error=0
+    printf "%-16s " "$1" >&3
+    echo "Calling task $1"
+    task_${1}
+
+    if [ $ERROR -eq 0 ] && task_${1}_test; then
+        echo -e "\e[1;32mOK\e[0m" >&3
+        echo "Task $1 OK"
+    else
+        echo -e "\e[1;31mFAILED\e[0m" >&3
+        echo "Task $1 FAILED"
+    fi
+}
+
+download_file() {
+    local SOURCE_FILE="$1"
+    local SOURCE_URL="$2"
+    local TARGET="$3"
+
+    local SOURCE=""
+    if [ -f "$SOURCE_FILE" ] ; then
+        SOURCE="file://$SOURCE_FILE"
+    else
+        SOURCE="$SOURCE_URL"
+    fi
+
+    curl -o- "$SOURCE" > "$TARGET"
+}
+
+pkg_is_installed() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)
+            [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" == "install ok installed" ]
+            ;;
+        openSUSE*|SUSE*)
+            rpm -q "$1" >/dev/null
+            ;;
+    esac
+}
+
 has_nvidia_gpu() {
     lspci -nd 10de: | grep -q '030[02]:'
 }
@@ -121,15 +162,126 @@ has_threeg() {
     lsusb -d 12d1:15bb
 }
 
-pkg_is_installed() {
+task_clean() {
+    $clean_cmd
+    find /var/lib/apt/lists -type f -not -name 'lock' -exec rm -fv {} \; 2>/dev/null
+}
+
+task_clean_test() {
+    return 0
+}
+
+task_update() {
+    $refresh_cmd
+    $upgrade_cmd
+}
+
+task_update_test() {
+    return 0
+}
+
+task_init() {
+    [ -x "$(which curl)" ] || $install_cmd curl
+}
+
+task_init_test() {
+    [ -x "$(which curl)" ]
+}
+
+task_repository() {
+    local REPO_TMP="$(mktemp -d)"
+
     case "$LSB_DIST_ID" in
         Ubuntu)
-            [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" == "install ok installed" ]
+            local UBUNTU_KEYNAME="ubuntu.pub"
+            local UBUNTU_KEYFILE_PATH="$REPO_TMP/$UBUNTU_KEYNAME"
+            local UBUNTU_REPO="tuxedo-computers.list"
+            local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
+
+            download_file "$BASEDIR/keys/$UBUNTU_KEYNAME" "$BASE_URL/keys/$UBUNTU_KEYNAME" "$UBUNTU_KEYFILE_PATH"
+            download_file"$BASEDIR/sourcelists/$UBUNTU_REPO" "$BASE_URL/sourcelists/$UBUNTU_REPO" "$UBUNTU_REPO_FILEPATH"
+
+            sed -i -e 's/\${lsb_codename}/'"$LSB_CODENAME"'/g' "$UBUNTU_REPO_FILEPATH"
+
+            apt-key add "$UBUNTU_KEYFILE_PATH"
             ;;
         openSUSE*|SUSE*)
-            rpm -q "$1" >/dev/null
+            local SUSE_KEYNAME="suse.pub"
+            local NVIDIA_KEYNAME="nvidia.pub"
+            local SUSE_ISV_REPO="repo-isv-tuxedo.repo"
+            local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
+
+            local SUSE_KEYFILE_PATH="$REPO_TMP/$SUSE_KEYNAME"
+            local NVIDIA_KEYFILE_PATH="$REPO_TMP/$NVIDIA_KEYNAME"
+
+            download_file "$BASEDIR/keys/$SUSE_KEYNAME" "$BASE_URL/keys/$SUSE_KEYNAME" "$SUSE_KEYFILE_PATH"
+            download_file "$BASEDIR/keys/$NVIDIA_KEYNAME" "$BASE_URL/keys/$NVIDIA_KEYNAME" "$NVIDIA_KEYFILE_PATH"
+
+            download_file "$BASEDIR/sourcelists/$SUSE_ISV_REPO" "$BASE_URL/sourcelists/$SUSE_ISV_REPO" "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
+            download_file "$BASEDIR/sourcelists/$SUSE_NVIDIA_REPO" "$BASE_URL/sourcelists/$SUSE_NVIDIA_REPO" "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
+
+            rpmkeys --import "$SUSE_KEYFILE_PATH"
+            rpmkeys --import "$NVIDIA_KEYFILE_PATH"
             ;;
     esac
+
+    rm -rf "$REPO_TMP"
+}
+
+task_repository_test() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)
+            apt-key list|grep -q TUXEDO || return 1
+            ;;
+        openSUSE*|SUSE*)
+            [ -s /etc/zypp/repos.d/repo-isv-tuxedo.repo ]    || return 1
+            [ -s /etc/zypp/repos.d/repo-nvidia-tuxedo.repo ] || return 1
+            ;;
+    esac
+
+    echo "repository keys successfully installed!"
+    return 0
+}
+
+task_install_kernel() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)
+            case "$LSB_CODENAME" in
+                xenial)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+                yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
+                zesty)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+                artful)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+                bionic)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+                *)       $install_cmd linux-generic ;;
+            esac
+            ;;
+        openSUSE*|SUSE*)
+            case "$LSB_RELEASE" in
+                42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
+                *)    : ;;
+            esac
+            ;;
+    esac
+}
+
+task_install_kernel_test() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)
+            case "$LSB_CODENAME" in
+                xenial)  pkg_is_installed linux-generic;;
+                yakkety) pkg_is_installed linux-image-4.11.8-041108-generic;;
+                zesty)   pkg_is_installed linux-image-generic;;
+                artful)  pkg_is_installed linux-image-generic;;
+                bionic)  pkg_is_installed linux-image-generic;;
+                *)       pkg_is_installed linux-generic || return 1 ;;
+            esac
+            ;;
+        openSUSE*|SUSE*)
+            pkg_is_installed kernel-default || return 1
+            ;;
+    esac
+
+    return 0
 }
 
 task_grub() {
@@ -197,6 +349,24 @@ task_grub_test() {
     return 0
 }
 
+task_fingerprint() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)
+            $install_cmd libfprint0 libpam-fprintd fprint-demo
+            ;;
+        openSUSE*|SUSE*)
+            $install_cmd libfprint0 pam_fprint
+            ;;
+    esac
+}
+
+task_fingerprint_test() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)          pkg_is_installed fprint-demo && pkg_is_installed libfprint0;;
+        openSUSE*|SUSE*) pkg_is_installed libfprint0;;
+    esac
+}
+
 task_nvidia() {
     case "$LSB_DIST_ID" in
         Ubuntu)
@@ -243,195 +413,6 @@ task_nvidia_test() {
             pkg_is_installed nvidia-computeG04
             ;;
     esac
-}
-
-task_fingerprint() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)
-            $install_cmd libfprint0 libpam-fprintd fprint-demo
-            ;;
-        openSUSE*|SUSE*)
-            $install_cmd libfprint0 pam_fprint
-            ;;
-    esac
-}
-
-task_fingerprint_test() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)          pkg_is_installed fprint-demo && pkg_is_installed libfprint0;;
-        openSUSE*|SUSE*) pkg_is_installed libfprint0;;
-    esac
-}
-
-task_wallpaper() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)          $install_cmd tuxedo-wallpapers;;
-        openSUSE*|SUSE*) $install_cmd tuxedo-one-wallpapers;;
-    esac
-
-    if pkg_is_installed ubuntu-desktop; then
-        local FILENAME="30_tuxedo-settings.gschema.override"
-        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
-        glib-compile-schemas /usr/share/glib-2.0/schemas
-    elif pkg_is_installed kubuntu-desktop; then
-        local FILENAME="80-tuxedo.js"
-        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
-    elif pkg_is_installed xubuntu-desktop; then
-        local FILENAME="xfce4-desktop.xml"
-        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
-    fi
-}
-
-task_wallpaper_test() {
-    pkg_is_installed tuxedo-wallpapers || pkg_is_installed tuxedo-one-wallpapers
-}
-
-task_misc() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)
-            if ! [ -x "$(which gsettings)" ]; then
-                echo "gsettings not found or not executable. Skipping misc!"
-                return 1
-            fi
-
-            sudo -u "$(logname)" -- /bin/bash <<'EOSU'
-            schema="com.canonical.Unity.Lenses"
-            val="['more_suggestions-amazon.scope', 'more_suggestions-u1ms.scope', 'more_suggestions-populartracks.scope', 'music-musicstore.scope', 'more_suggestions-ebay.scope', 'more_suggestions-ubuntushop.scope', 'more_suggestions-skimlinks.scope']"
-
-            if gsettings writable "$schema" disabled-scopes; then
-                gsettings set "$schema" disabled-scopes "$val"
-            fi
-
-            if [ "$(lsb_release -sr)" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
-                gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
-            fi
-EOSU
-            ;;
-    esac
-}
-
-task_misc_test() {
-    return 0
-}
-
-download_file() {
-    local SOURCE_FILE="$1"
-    local SOURCE_URL="$2"
-    local TARGET="$3"
-
-    local SOURCE=""
-    if [ -f "$SOURCE_FILE" ] ; then
-        SOURCE="file://$SOURCE_FILE"
-    else
-        SOURCE="$SOURCE_URL"
-    fi
-
-    curl -o- "$SOURCE" > "$TARGET"
-}
-
-task_repository() {
-    local REPO_TMP="$(mktemp -d)"
-
-    case "$LSB_DIST_ID" in
-        Ubuntu)
-            local UBUNTU_KEYNAME="ubuntu.pub"
-            local UBUNTU_KEYFILE_PATH="$REPO_TMP/$UBUNTU_KEYNAME"
-            local UBUNTU_REPO="tuxedo-computers.list"
-            local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
-
-            download_file "$BASEDIR/keys/$UBUNTU_KEYNAME" "$BASE_URL/keys/$UBUNTU_KEYNAME" "$UBUNTU_KEYFILE_PATH"
-            download_file"$BASEDIR/sourcelists/$UBUNTU_REPO" "$BASE_URL/sourcelists/$UBUNTU_REPO" "$UBUNTU_REPO_FILEPATH"
-
-            sed -i -e 's/\${lsb_codename}/'"$LSB_CODENAME"'/g' "$UBUNTU_REPO_FILEPATH"
-
-            apt-key add "$UBUNTU_KEYFILE_PATH"
-            ;;
-        openSUSE*|SUSE*)
-            local SUSE_KEYNAME="suse.pub"
-            local NVIDIA_KEYNAME="nvidia.pub"
-            local SUSE_ISV_REPO="repo-isv-tuxedo.repo"
-            local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
-
-            local SUSE_KEYFILE_PATH="$REPO_TMP/$SUSE_KEYNAME"
-            local NVIDIA_KEYFILE_PATH="$REPO_TMP/$NVIDIA_KEYNAME"
-
-            download_file "$BASEDIR/keys/$SUSE_KEYNAME" "$BASE_URL/keys/$SUSE_KEYNAME" "$SUSE_KEYFILE_PATH"
-            download_file "$BASEDIR/keys/$NVIDIA_KEYNAME" "$BASE_URL/keys/$NVIDIA_KEYNAME" "$NVIDIA_KEYFILE_PATH"
-
-            download_file "$BASEDIR/sourcelists/$SUSE_ISV_REPO" "$BASE_URL/sourcelists/$SUSE_ISV_REPO" "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
-            download_file "$BASEDIR/sourcelists/$SUSE_NVIDIA_REPO" "$BASE_URL/sourcelists/$SUSE_NVIDIA_REPO" "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
-
-            rpmkeys --import "$SUSE_KEYFILE_PATH"
-            rpmkeys --import "$NVIDIA_KEYFILE_PATH"
-            ;;
-    esac
-
-    rm -rf "$REPO_TMP"
-}
-
-task_repository_test() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)
-            apt-key list|grep -q TUXEDO || return 1
-            ;;
-        openSUSE*|SUSE*)
-            [ -s /etc/zypp/repos.d/repo-isv-tuxedo.repo ]    || return 1
-            [ -s /etc/zypp/repos.d/repo-nvidia-tuxedo.repo ] || return 1
-            ;;
-    esac
-
-    echo "repository keys successfully installed!"
-    return 0
-}
-
-task_update() {
-    $refresh_cmd
-    $upgrade_cmd
-}
-
-task_update_test() {
-    return 0
-}
-
-task_install_kernel() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)
-            case "$LSB_CODENAME" in
-                xenial)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
-                zesty)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                artful)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                bionic)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                *)       $install_cmd linux-generic ;;
-            esac
-            ;;
-        openSUSE*|SUSE*)
-            case "$LSB_RELEASE" in
-                42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
-                *)    : ;;
-            esac
-            ;;
-    esac
-}
-
-task_install_kernel_test() {
-    case "$LSB_DIST_ID" in
-        Ubuntu)
-            case "$LSB_CODENAME" in
-                xenial)  pkg_is_installed linux-generic;;
-                yakkety) pkg_is_installed linux-image-4.11.8-041108-generic;;
-                zesty)   pkg_is_installed linux-image-generic;;
-                artful)  pkg_is_installed linux-image-generic;;
-                bionic)  pkg_is_installed linux-image-generic;;
-                *)       pkg_is_installed linux-generic || return 1 ;;
-            esac
-            ;;
-        openSUSE*|SUSE*)
-            pkg_is_installed kernel-default || return 1
-            ;;
-    esac
-
-    return 0
 }
 
 task_firmware() {
@@ -528,36 +509,55 @@ task_software_test() {
     return 0
 }
 
-task_clean() {
-    $clean_cmd
-    find /var/lib/apt/lists -type f -not -name 'lock' -exec rm -fv {} \; 2>/dev/null
-}
+task_wallpaper() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)          $install_cmd tuxedo-wallpapers;;
+        openSUSE*|SUSE*) $install_cmd tuxedo-one-wallpapers;;
+    esac
 
-task_clean_test() {
-    return 0
-}
-
-task_init() {
-    [ -x "$(which curl)" ] || $install_cmd curl
-}
-
-task_init_test() {
-    [ -x "$(which curl)" ]
-}
-
-do_task() {
-    error=0
-    printf "%-16s " "$1" >&3
-    echo "Calling task $1"
-    task_${1}
-
-    if [ $ERROR -eq 0 ] && task_${1}_test; then
-        echo -e "\e[1;32mOK\e[0m" >&3
-        echo "Task $1 OK"
-    else
-        echo -e "\e[1;31mFAILED\e[0m" >&3
-        echo "Task $1 FAILED"
+    if pkg_is_installed ubuntu-desktop; then
+        local FILENAME="30_tuxedo-settings.gschema.override"
+        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
+        glib-compile-schemas /usr/share/glib-2.0/schemas
+    elif pkg_is_installed kubuntu-desktop; then
+        local FILENAME="80-tuxedo.js"
+        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
+    elif pkg_is_installed xubuntu-desktop; then
+        local FILENAME="xfce4-desktop.xml"
+        download_file "$BASEDIR/files/$FILENAME" "$BASE_URL/files/$FILENAME" "/usr/share/glib-2.0/schemas/$FILENAME"
     fi
+}
+
+task_wallpaper_test() {
+    pkg_is_installed tuxedo-wallpapers || pkg_is_installed tuxedo-one-wallpapers
+}
+
+task_misc() {
+    case "$LSB_DIST_ID" in
+        Ubuntu)
+            if ! [ -x "$(which gsettings)" ]; then
+                echo "gsettings not found or not executable. Skipping misc!"
+                return 1
+            fi
+
+            sudo -u "$(logname)" -- /bin/bash <<'EOSU'
+            schema="com.canonical.Unity.Lenses"
+            val="['more_suggestions-amazon.scope', 'more_suggestions-u1ms.scope', 'more_suggestions-populartracks.scope', 'music-musicstore.scope', 'more_suggestions-ebay.scope', 'more_suggestions-ubuntushop.scope', 'more_suggestions-skimlinks.scope']"
+
+            if gsettings writable "$schema" disabled-scopes; then
+                gsettings set "$schema" disabled-scopes "$val"
+            fi
+
+            if [ "$(lsb_release -sr)" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
+                gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
+            fi
+EOSU
+            ;;
+    esac
+}
+
+task_misc_test() {
+    return 0
 }
 
 do_task clean
