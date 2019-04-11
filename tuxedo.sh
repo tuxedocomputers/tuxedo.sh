@@ -317,7 +317,7 @@ task_misc() {
 EOSU
             ;;
     esac
-    echo "options i915 enable_dpcd_backlight" >> /etc/modprobe.d/i915.conf
+    echo "options i915 enable_dpcd_backlight" >> /etc/modprobe.d/tuxedo-i915.conf
 }
 
 task_misc_test() {
