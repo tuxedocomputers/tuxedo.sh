@@ -1,0 +1,12 @@
+stages:
+  - deploy
+
+upload_mytuxedo:
+  stage: deploy
+  only:
+    refs:
+      - master
+    changes:
+      - tuxedo.sh
+  script:
+    - curl -T ./tuxedo.sh --user ${K8S_SECRET_WEBDAV_USER}:${K8S_SECRET_WEBDAV_PASSWORD} ${TUXEDO_SH_URL}
