@@ -47,7 +47,7 @@ product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/produc
 board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
 
 case $product in
-    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook15*|Skylake_Platform) 
+    U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook14v1|InfinityBook15*|Skylake_Platform) 
         product="U931"
         grubakt="NOGRUB"
         ;;
@@ -61,6 +61,9 @@ case $product in
         grubakt="03GRUB"
         ;;
     P775DM3*)
+        grubakt="01GRUB"
+        ;;
+    P95_H*)
         grubakt="01GRUB"
         ;;
     *) : ;;
@@ -456,21 +459,18 @@ task_install_kernel_test() {
 task_software() {
     case "$lsb_dist_id" in
         Ubuntu)
-            [ -d /etc/laptop-mode/conf.d ] || mkdir -p /etc/laptop-mode/conf.d
-            echo "CONTROL_ETHERNET=0" > /etc/laptop-mode/conf.d/ethernet.conf
-            $install_cmd laptop-mode-tools xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks
-
-            if [ "$lsb_release" == "15.10" ]; then
-                sed -i "s#\(^AUTOSUSPEND_RUNTIME_DEVTYPE_BLACKLIST=\).*#\1usbhid#" /etc/laptop-mode/conf.d/runtime-pm.conf
-            fi
-
-            apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
+            $install_cmd tlp xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils gnome-tweaks
 
             if [ $lsb_release == "16.04" ]; then
                 wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
+                apt-get -y remove unity-webapps-common app-install-data-partner apport ureadahead
             fi
 
             if [ $lsb_release == "18.04" ]; then
+                $ROOTCMD apt-get -y remove --purge ubuntu-web-launchers apport ureadahead app-install-data-partner kwalletmanager tuxedo-keyboard-dkms realtek-clevo-pin-fix-dkms
+                echo "tuxedo_keyboard" >> /etc/modules
+                echo "options tuxedo_keyboard mode=0 color_left=0xFFFFFF color_center=0xFFFFFF color_right=0xFFFFFF color_extra=0xFFFFFF brightness=200" > /etc/modprobe.d/tuxedo_keyboard.conf
+
                 if [ $fix == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
@@ -521,7 +521,9 @@ task_software() {
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
             fi
 
-            $install_cmd  exfat-utils fuse-exfat
+            $install_cmd  exfat-utils fuse-exfat tuxedo_keyboard realtek-clevo-pin-fix
+            echo "options tuxedo_keyboard mode=0 color_left=0xFFFFFF color_center=0xFFFFFF color_right=0xFFFFFF color_extra=0xFFFFFF brightness=200" > /etc/modprobe.d/tuxedo_keyboard.conf
+            systemctl enable dkms
             ;;
     esac
 
