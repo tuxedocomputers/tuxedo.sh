@@ -249,7 +249,7 @@ task_nvidia() {
 task_nvidia_test() {
     case "$lsb_dist_id" in
         Ubuntu)
-            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-381
+            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-381 || pkg_is_installed nvidia-driver-415
             ;;
         openSUSE*|SUSE*)
             pkg_is_installed nvidia-computeG04
@@ -533,7 +533,7 @@ task_software() {
 task_software_test() {
     case "$lsb_dist_id" in
         Ubuntu|LinuxMint|elementary*)
-            pkg_is_installed laptop-mode-tools || return 1
+            pkg_is_installed tlp || return 1
             ;;
     esac
 
