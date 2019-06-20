@@ -467,7 +467,8 @@ task_software() {
             fi
 
             if [ $lsb_release == "18.04" ]; then
-                $ROOTCMD apt-get -y remove --purge ubuntu-web-launchers apport ureadahead app-install-data-partner kwalletmanager tuxedo-keyboard-dkms realtek-clevo-pin-fix-dkms
+                apt-get -y remove --purge ubuntu-web-launchers apport ureadahead app-install-data-partner kwalletmanager
+                $install_cmd tuxedo-keyboard-dkms realtek-clevo-pin-fix-dkms
                 echo "tuxedo_keyboard" >> /etc/modules
                 echo "options tuxedo_keyboard mode=0 color_left=0xFFFFFF color_center=0xFFFFFF color_right=0xFFFFFF color_extra=0xFFFFFF brightness=200" > /etc/modprobe.d/tuxedo_keyboard.conf
 
