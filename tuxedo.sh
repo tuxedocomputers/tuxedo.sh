@@ -252,7 +252,7 @@ task_nvidia_test() {
             pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-381 || pkg_is_installed nvidia-driver-415
             ;;
         openSUSE*|SUSE*)
-            pkg_is_installed nvidia-computeG04
+            pkg_is_installed nvidia-computeG05
             ;;
     esac
 }
