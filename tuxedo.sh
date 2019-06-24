@@ -249,7 +249,7 @@ task_nvidia() {
 task_nvidia_test() {
     case "$lsb_dist_id" in
         Ubuntu)
-            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-381 || pkg_is_installed nvidia-driver-415
+            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-driver-415
             ;;
         openSUSE*|SUSE*)
             pkg_is_installed nvidia-computeG05
@@ -369,20 +369,27 @@ task_repository() {
         openSUSE*|SUSE*)
             local SUSE_KEYNAME="suse.pub"
             local NVIDIA_KEYNAME="nvidia.pub"
+            local RPM_KEYNAME="rpm.pub"
+
             local SUSE_ISV_REPO="repo-isv-tuxedo.repo"
             local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
+            local SUSE_RPM_REPO="repo-rpm-tuxedo.repo"
 
             local SUSE_KEYFILE_PATH=${tmp}/${SUSE_KEYNAME}
             local NVIDIA_KEYFILE_PATH=${tmp}/${NVIDIA_KEYNAME}
+            local NVIDIA_RPM_PATH=${tmp}/${RPM_KEYNAME}
 
             download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
+            download_file ${BASEDIR}/keys/${RPM_KEYNAME} ${BASE_URL}/keys/${RPM_KEYNAME} ${RPM_KEYFILE_PATH}
       
             download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
+            download_file ${BASEDIR}/sourcelists/${SUSE_RPM_REPO} ${BASE_URL}/sourcelists/${SUSE_RPM_REPO} "/etc/zypp/repos.d/repo-rpm-tuxedo.repo"
 
             rpmkeys --import ${SUSE_KEYFILE_PATH}
             rpmkeys --import ${NVIDIA_KEYFILE_PATH}
+            rpmkeys --import ${RPM_KEYFILE_PATH}
             ;;
     esac
 
@@ -397,6 +404,7 @@ task_repository_test() {
         openSUSE*|SUSE*)
             [ -s /etc/zypp/repos.d/repo-isv-tuxedo.repo ]    || return 1
             [ -s /etc/zypp/repos.d/repo-nvidia-tuxedo.repo ] || return 1
+            [ -s /etc/zypp/repos.d/repo-rpm-tuxedo.repo ] || return 1
             ;;
     esac
 

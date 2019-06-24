@@ -1,0 +1,8 @@
+[repo-rpm-tuxedo]
+name=TUXEDO Computers - 15.0 rpm
+baseurl=https://rpm.tuxedocomputers.com/opensuse/15.1
+path=/
+gpgkey=https://rpm.tuxedocomputers.com/opensuse/15.1/repodata/repomd.xml.key
+gpgcheck=1
+enabled=1
+autorefresh=1
