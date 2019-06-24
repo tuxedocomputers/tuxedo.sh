@@ -503,18 +503,27 @@ task_software() {
             cp iwlwifi*.ucode /lib/firmware/
             rm -rf iwlwifi-*
 
+            if has_kabylake_cpu;then
             wget https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
+            wget https://www.tuxedocomputers.com/support/i915/kbl_guc_ver9_14.bin
+            wget https://www.tuxedocomputers.com/support/i915/kbl_huc_ver02_00_1810.bin
+            [ -d /lib/firmware/i915 ] || mkdir /lib/firmware/i915
+            cp kbl*.bin /lib/firmware/i915/
+            ln -sf /lib/firmware/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1.bin
+            ln -sf /lib/firmware/i915/kbl_guc_ver9_14.bin /lib/firmware/i915/kbl_guc_ver9.bin
+            ln -sf /lib/firmware/i915/kbl_huc_ver02_00_1810.bin /lib/firmware/i915/kbl_huc_ver02.bin
+            rm -rf kbl*.bin
+            fi
+
+            if has_skylake_cpu; then
             wget https://www.tuxedocomputers.com/support/i915/skl_dmc_ver1_26.bin
             wget https://www.tuxedocomputers.com/support/i915/skl_guc_ver6_1.bin
             [ -d /lib/firmware/i915 ] || mkdir /lib/firmware/i915
-            cp kbl*.bin /lib/firmware/i915/
             cp skl*.bin /lib/firmware/i915
-
-            ln -sf /lib/firmware/i915/kbl_dmc_ver1_01.bin /lib/firmware/i915/kbl_dmc_ver1.bin
             ln -sf /lib/firmware/i915/skl_dmc_ver1_26.bin /lib/firmware/i915/skl_dmc_ver1.bin
             ln -sf /lib/firmware/i915/skl_guc_ver6_1.bin /lib/firmware/i915/skl_guc_ver6.bin
-            rm -rf kbl*.bin
             rm -rf skl*.bin
+            fi
 
             if [ -e "/sys/class/backlight/intel_backlight/max_brightness" ]; then
                 cat /sys/class/backlight/intel_backlight/max_brightness > /sys/class/backlight/intel_backlight/brightness
