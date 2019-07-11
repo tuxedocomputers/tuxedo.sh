@@ -431,7 +431,7 @@ task_install_kernel() {
                 yakkety) $install_cmd linux-image-4.11.8-041108-generic linux-headers-4.11.8-041108-generic linux-headers-4.11.8-041108;;
                 zesty)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 artful)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
-                bionic)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
+                bionic)  $install_cmd linux-generic-hwe-18.04 linux-image-generic-hwe-18.04 linux-headers-generic-hwe-18.04 linux-signed-generic-hwe-18.04;;
                 *)       $install_cmd linux-generic ;;
             esac
             ;;
