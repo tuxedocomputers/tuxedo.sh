@@ -27,6 +27,10 @@ BASEDIR=$(dirname "$SCRIPTPATH")
 
 BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
+if [ -f /var/log/tuxedo-install.log ]; then
+exit 0
+fi
+
 # additional packages that should be installed
 PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
 
