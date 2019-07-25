@@ -223,7 +223,7 @@ task_nvidia() {
             elif [ "$lsb_release" == "17.04" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             elif [ "$lsb_release" == "18.04" ]; then
-		$install_cmd nvidia-driver-415 mesa-utils nvidia-prime python-appindicator python-cairo python-gtk2
+		$install_cmd nvidia-driver-430 mesa-utils nvidia-prime python-appindicator python-cairo python-gtk2
             else
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             fi
@@ -253,7 +253,7 @@ task_nvidia() {
 task_nvidia_test() {
     case "$lsb_dist_id" in
         Ubuntu)
-            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-driver-415
+            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-driver-430
             ;;
         openSUSE*|SUSE*)
             pkg_is_installed nvidia-computeG05
