@@ -32,7 +32,7 @@ exit 0
 fi
 
 # additional packages that should be installed
-PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar"
+PACKAGES="cheese pavucontrol brasero gparted pidgin vim obexftp ethtool xautomation curl linssid unrar xbindkeys"
 
 error=0
 trap 'error=$(($? > $error ? $? : $error))' ERR
@@ -76,6 +76,15 @@ esac
 case $board in
     P95*) fix="audiofix";;
     P9*) fix="fanfix";;
+    *) : ;;
+esac
+
+case $board in
+    P95_96_97Ex_Rx|PB50_70EF_ED_EC|PB50_70RF_RD_RC|P9XXRC)
+        grubakt="NOGRUB"
+        tpfix="TPFIX"
+        airfix="AIRFIX"
+        ;;
     *) : ;;
 esac
 
@@ -490,6 +499,15 @@ task_software() {
                 if [ $fix == "fanfix" ]; then
                     $install_cmd tuxedofancontrol
                 fi
+
+                if [ $tpfix == "TPFIX" ]; then
+                    $install_cmd tuxedo-xp-xc-touchpad-key-fix
+                fi
+
+                if [ $airfix == "AIRFIX" ]; then
+                    $install_cmd tuxedo-xp-xc-airplane-mode-fix
+                fi
+
             fi
 
             if has_threeg; then
