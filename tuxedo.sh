@@ -172,6 +172,9 @@ task_grub() {
                 03GRUB)
                     grub_options=("acpi_osi=" "acpi_os_name=Linux")
                     ;;
+                NOGRUB)
+                    grub_options=""
+                    ;;
                 *)
                     grub_options=("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
                     ;;
