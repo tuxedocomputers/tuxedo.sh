@@ -247,14 +247,14 @@ task_nvidia() {
             fi
 
             if $(lspci -nd '10de:' | grep -q '030[02]:' && lspci -nd '8086:' | grep -q '0300:'); then
-		$install_cmd nvidia-computeG05 nvidia-gfxG05-kmp-default nvidia-glG05 x11-video-nvidiaG05 xf86-video-intel bbswitch
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' /etc/X11/xdm/Xsetup
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 a\.\/etc\/X11\/xinit\/xinitrc\.d\/prime-offload\.sh' /etc/X11/xdm/Xsetup
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 athen' /etc/X11/xdm/Xsetup
-                sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 aif\ \[\ \-f\ /etc/X11/xinit/xinitrc\.d/prime-offload\.sh\ \]\;' /etc/X11/xdm/Xsetup
-                sed -i -e 's/Intel/modesetting/' "/etc/prime/prime-offload.sh"
-                sed -i -e 's/Driver\ \"intel\"/Driver\ \"modesetting\"/' "/etc/prime/xorg.conf"
-                sed -i -e 's/Option\ \"UseDisplayDevice\"\ \"None\"/#Option\ \"UseDisplayDevice\"\ \"None\"/' "/etc/prime/xorg.conf"
+		$install_cmd nvidia-computeG05 nvidia-gfxG05-kmp-default nvidia-glG05 x11-video-nvidiaG05 xf86-video-intel dkms-bbswitch
+                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' /etc/X11/xdm/Xsetup
+                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 a\.\/etc\/X11\/xinit\/xinitrc\.d\/prime-offload\.sh' /etc/X11/xdm/Xsetup
+                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 athen' /etc/X11/xdm/Xsetup
+                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 aif\ \[\ \-f\ /etc/X11/xinit/xinitrc\.d/prime-offload\.sh\ \]\;' /etc/X11/xdm/Xsetup
+                #sed -i -e 's/Intel/modesetting/' "/etc/prime/prime-offload.sh"
+                #sed -i -e 's/Driver\ \"intel\"/Driver\ \"modesetting\"/' "/etc/prime/xorg.conf"
+                #sed -i -e 's/Option\ \"UseDisplayDevice\"\ \"None\"/#Option\ \"UseDisplayDevice\"\ \"None\"/' "/etc/prime/xorg.conf"
             else
 		$install_cmd dkms nvidia-computeG05 nvidia-gfxG05-kmp-default nvidia-glG05 x11-video-nvidiaG05
             fi
