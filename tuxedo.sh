@@ -84,7 +84,9 @@ case $board in
         grubakt="NOGRUB"
         tpfix="TPFIX"
         airfix="AIRFIX"
-        ;;
+        nvsusfix="NVSUSFIX"
+        audsusfix="AUDSUSFIX"
+	;;
     *) : ;;
 esac
 
@@ -509,6 +511,14 @@ task_software() {
 
                 if [ $airfix == "AIRFIX" ]; then
                     $install_cmd tuxedo-xp-xc-airplane-mode-fix
+                fi
+
+		if [ $nvsusfix="NVSUSFIX" ]; then
+                    $install_cmd tuxedo-nvidia-suspend-fix
+                fi
+
+		if [ $audsusfix="AUDSUSFIX" ]; then
+                    $install_cmd tuxedo-audio-suspend-fix
                 fi
 
             fi
