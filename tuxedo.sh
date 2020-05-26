@@ -318,6 +318,9 @@ task_wallpaper_test() {
 }
 
 task_misc() {
+    #i915
+    echo "options i915 enable_dpcd_backlight" >> /etc/modprobe.d/tuxedo-i915.conf
+    
     case "$lsb_dist_id" in
         Ubuntu)
             if ! [ -x "$(which gsettings)" ]; then
@@ -336,11 +339,14 @@ task_misc() {
             if [ "$lsb_release" == "18.04" ] && gsettings writable org.gnome.desktop.peripherals.touchpad click-method; then
                 gsettings set org.gnome.desktop.peripherals.touchpad click-method areas
             fi
+            
+            #New syntax for parameter enable_dpcd_backlight in i915
+            if [ "$lsb_release" == "20.04" ]; then
+                sed -i 's/enable_dpcd_backlight$/enable_dpcd_backlight=1/' /etc/modprobe.d/tuxedo-i915.conf
+            fi         
 EOSU
             ;;
     esac
-    #i915
-    echo "options i915 enable_dpcd_backlight" >> /etc/modprobe.d/tuxedo-i915.conf
 }
 
 task_misc_test() {
