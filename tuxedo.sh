@@ -63,13 +63,13 @@ case $product in
         grubakt="NOGRUB"
         ;;
     P7xxTM*)
-        grubakt="03GRUB"
+        grubakt="NOGRUB"
         ;;
     P775DM3*)
-        grubakt="01GRUB"
+        grubakt="NOGRUB"
         ;;
     P95_H*)
-        grubakt="01GRUB"
+        grubakt="NOGRUB"
         ;;
     *) : ;;
 esac
@@ -77,6 +77,28 @@ esac
 case $board in
     P95*) fix="audiofix";;
     P9*) fix="fanfix";;
+    *) : ;;
+esac
+
+case $board in
+    P95_96_97Ex_Rx) fix="tuxaudfix";;
+    P9XXRC) fix="tuxaudfix";;
+    *) : ;;
+esac
+
+case $board in
+    N350TW) fix="tuxrestfix";;
+    *) : ;;
+esac
+
+case $board in
+    NHxxRZQ) fix="micfix";;
+    NHxxRZ) fix="micfix";;
+    L140CU) fix="micfix";;
+    NL40_50GU) fix="micfix";;
+    NH5xAx) fix="micfix";;
+    PCX0DX) fix="micfix";;
+    NJ50_NJ70CU) fix="micfix";;
     *) : ;;
 esac
 
@@ -238,7 +260,7 @@ task_nvidia() {
             elif [ "$lsb_release" == "17.04" ]; then
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             elif [ "$lsb_release" == "18.04" ]; then
-		$install_cmd nvidia-driver-430 mesa-utils nvidia-prime python-appindicator python-cairo python-gtk2
+		$install_cmd nvidia-driver-440 mesa-utils nvidia-prime python-appindicator python-cairo python-gtk2
             else
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             fi
@@ -251,13 +273,6 @@ task_nvidia() {
 
             if $(lspci -nd '10de:' | grep -q '030[02]:' && lspci -nd '8086:' | grep -q '0300:'); then
 		$install_cmd nvidia-computeG05 nvidia-gfxG05-kmp-default nvidia-glG05 x11-video-nvidiaG05 xf86-video-intel dkms-bbswitch
-                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 afi' /etc/X11/xdm/Xsetup
-                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 a\.\/etc\/X11\/xinit\/xinitrc\.d\/prime-offload\.sh' /etc/X11/xdm/Xsetup
-                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 athen' /etc/X11/xdm/Xsetup
-                #sed -i '/^\.\ \/etc\/sysconfig\/displaymanager/,1 aif\ \[\ \-f\ /etc/X11/xinit/xinitrc\.d/prime-offload\.sh\ \]\;' /etc/X11/xdm/Xsetup
-                #sed -i -e 's/Intel/modesetting/' "/etc/prime/prime-offload.sh"
-                #sed -i -e 's/Driver\ \"intel\"/Driver\ \"modesetting\"/' "/etc/prime/xorg.conf"
-                #sed -i -e 's/Option\ \"UseDisplayDevice\"\ \"None\"/#Option\ \"UseDisplayDevice\"\ \"None\"/' "/etc/prime/xorg.conf"
             else
 		$install_cmd dkms nvidia-computeG05 nvidia-gfxG05-kmp-default nvidia-glG05 x11-video-nvidiaG05
             fi
@@ -268,7 +283,7 @@ task_nvidia() {
 task_nvidia_test() {
     case "$lsb_dist_id" in
         Ubuntu)
-            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-driver-430
+            pkg_is_installed nvidia-390 || pkg_is_installed nvidia-driver-390 || pkg_is_installed nvidia-driver-440
             ;;
         openSUSE*|SUSE*)
             pkg_is_installed nvidia-computeG05
@@ -389,27 +404,33 @@ task_repository() {
             local SUSE_KEYNAME="suse.pub"
             local NVIDIA_KEYNAME="nvidia.pub"
             local RPM_KEYNAME="rpm.pub"
+            local KERNEL_KEYNAME="kernel.pub"
 
             local SUSE_ISV_REPO="repo-isv-tuxedo.repo"
             local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
             local SUSE_RPM_REPO="repo-rpm-tuxedo.repo"
+            local SUSE_KERNEL_REPO="repo-kernel-tuxedo.repo"
 
             local SUSE_KEYFILE_PATH=${tmp}/${SUSE_KEYNAME}
             local NVIDIA_KEYFILE_PATH=${tmp}/${NVIDIA_KEYNAME}
             local NVIDIA_RPM_PATH=${tmp}/${RPM_KEYNAME}
+            local KERNEL_KEYFILE_PATH=${tmp}/${KERNEL_KEYNAME}
 
             download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${RPM_KEYNAME} ${BASE_URL}/keys/${RPM_KEYNAME} ${RPM_KEYFILE_PATH}
+            download_file ${BASEDIR}/keys/${KERNEL_KEYNAME} ${BASE_URL}/keys/${KERNEL_KEYNAME} ${KERNEL_KEYFILE_PATH}
       
             download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_RPM_REPO} ${BASE_URL}/sourcelists/${SUSE_RPM_REPO} "/etc/zypp/repos.d/repo-rpm-tuxedo.repo"
+            download_file ${BASEDIR}/sourcelists/${SUSE_KERNEL_REPO} ${BASE_URL}/sourcelists/${SUSE_KERNEL_REPO} "/etc/zypp/repos.d/repo-kernel-tuxedo.repo"
 
             rpmkeys --import ${SUSE_KEYFILE_PATH}
             rpmkeys --import ${NVIDIA_KEYFILE_PATH}
             rpmkeys --import ${RPM_KEYFILE_PATH}
-            ;;
+            rpmkeys --import ${KERNEL_KEYFILE_PATH}
+	    ;;
     esac
 
     rm -rf "$tmp"
@@ -424,7 +445,8 @@ task_repository_test() {
             [ -s /etc/zypp/repos.d/repo-isv-tuxedo.repo ]    || return 1
             [ -s /etc/zypp/repos.d/repo-nvidia-tuxedo.repo ] || return 1
             [ -s /etc/zypp/repos.d/repo-rpm-tuxedo.repo ] || return 1
-            ;;
+            [ -s /etc/zypp/repos.d/repo-kernel-tuxedo.repo ] || return 1
+	    ;;
     esac
 
     echo "repository keys successfully installed!"
@@ -457,7 +479,8 @@ task_install_kernel() {
         openSUSE*|SUSE*)
             case "$lsb_release" in
                 42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
-                *)    : ;;
+                15.1) $install_cmd -f -r repo-kernel-tuxedo -f kernel-default kernel-devel kernel-firmware;;
+		*)    : ;;
             esac
             ;;
     esac
@@ -495,31 +518,21 @@ task_software() {
 
             if [ $lsb_release == "18.04" ]; then
                 apt-get -y remove --purge ubuntu-web-launchers apport ureadahead app-install-data-partner kwalletmanager
-                $install_cmd tuxedo-keyboard-dkms realtek-clevo-pin-fix-dkms
-                echo "tuxedo_keyboard" >> /etc/modules
-                echo "options tuxedo_keyboard mode=0 color_left=0xFFFFFF color_center=0xFFFFFF color_right=0xFFFFFF color_extra=0xFFFFFF brightness=200" > /etc/modprobe.d/tuxedo_keyboard.conf
-
+                $install_cmd tuxedo-keyboard tuxedo-cc-wmi tuxedo-control-center tuxedo-tomte 
                 if [ $fix == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
-                if [ $fix == "fanfix" ]; then
-                    $install_cmd tuxedofancontrol
+		
+		if [ $fix == "tuxaudfix" ]; then
+                    $install_cmd tuxedo-audio-fix
                 fi
 
-                if [ $tpfix == "TPFIX" ]; then
-                    $install_cmd tuxedo-xp-xc-touchpad-key-fix
+                if [ $fix == "tuxrestfix" ]; then
+                    $install_cmd tuxedo-restore-audio-fix
                 fi
 
-                if [ $airfix == "AIRFIX" ]; then
-                    $install_cmd tuxedo-xp-xc-airplane-mode-fix
-                fi
-
-		if [ $nvsusfix="NVSUSFIX" ]; then
-                    $install_cmd tuxedo-nvidia-suspend-fix
-                fi
-
-		if [ $audsusfix="AUDSUSFIX" ]; then
-                    $install_cmd tuxedo-audio-suspend-fix
+		if [ $fix == "micfix" ]; then
+                    $install_cmd tuxedo-micfix1
                 fi
 
             fi
