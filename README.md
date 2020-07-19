@@ -17,7 +17,7 @@ Das Script
 * führt die Treiber-Installation
 * Konfigurationen für die Sondertasten
 * TUXEDO Treiber-Installation
-* deaktivierung der Shoppingvorschläge in der Ubuntu-Such
+* Deaktivierung der Shoppingvorschläge in der Ubuntu-Suche
 * bei Geräten mit NVIDIA Grafik die entspr. Treiber 
 sowie 
 * Umschaltelinks
