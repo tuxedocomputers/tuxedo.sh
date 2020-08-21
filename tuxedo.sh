@@ -56,7 +56,7 @@ case $product in
         product="U931"
         grubakt="NOGRUB"
         ;;
-    P65_67RS*|P65_67RP*|P65xRP|P67xRP|P65xH*|P65_P67H*)
+    P65_67RS*|P65_67RP*|P65xRP|P67xRP|P65xH*|P65_P67H*|NHxxRZQ*)
         grubakt="02GRUB"
         ;;
     P7xxDM*)
@@ -70,6 +70,16 @@ case $product in
         ;;
     P95_H*)
         grubakt="NOGRUB"
+        ;;
+    X35R*)
+        grubakt="03GRUB"
+        ;;
+
+    PF5PU1G*)
+        grubakt="04GRUB"
+        ;;
+    PB50_70DFx_DDx*)
+        grubakt="05GRUB"
         ;;
     *) : ;;
 esac
@@ -97,7 +107,6 @@ case $board in
     L140CU) fix="micfix";;
     NL40_50GU) fix="micfix";;
     NH5xAx) fix="micfix";;
-    PCX0DX) fix="micfix";;
     NJ50_NJ70CU) fix="micfix";;
     *) : ;;
 esac
@@ -188,19 +197,22 @@ task_grub() {
     case "$lsb_dist_id" in
         Ubuntu)
             case "$grubakt" in
-                01GRUB)
-                    grub_options=("acpi_osi=Linux" "acpi_backlight=vendor")
-                    ;;
                 02GRUB)
-                    grub_options=("acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
-                    ;;
-                03GRUB)
-                    grub_options=("acpi_osi=" "acpi_os_name=Linux")
+                    grub_options=("i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
                     ;;
                 NOGRUB)
                     grub_options=""
                     ;;
-                *)
+		03GRUB)
+		    grub_options="psmouse.elantech_smbus=0"
+		    ;;
+                04GRUB)
+		    grub_options="iommu=soft"
+		    ;;
+                05GRUB)
+                    grub_options="i8042.nopnp"
+		    ;;
+		*)
                     grub_options=("acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
                     ;;
             esac
@@ -221,17 +233,11 @@ task_grub() {
 
         openSUSE*|SUSE*)
             case "$grubakt" in
-                01GRUB)
-                    grub_options=("loglevel=0" "acpi_osi=Linux" "acpi_backlight=vendor")
-                    ;;
                 02GRUB)
-                    grub_options=("loglevel=0" "acpi_os_name=Linux" "acpi_osi=" "acpi_backlight=vendor" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
-                    ;;
-                03GRUB)
-                    grub_options=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux")
+                    grub_options=("loglevel=0" "i8042.reset" "i8042.nomux" "i8042.nopnp" "i8042.noloop")
                     ;;
                 *)
-                    grub_options=("loglevel=0" "acpi_osi=" "acpi_os_name=Linux" "acpi_backlight=vendor")
+                    grub_options=("loglevel=0")
                     ;;
             esac
 
@@ -261,6 +267,8 @@ task_nvidia() {
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             elif [ "$lsb_release" == "18.04" ]; then
 		$install_cmd nvidia-driver-440 mesa-utils nvidia-prime python-appindicator python-cairo python-gtk2
+	    elif [ "$lsb_release" == "20.04" ]; then
+		$install_cmd nvidia-driver-440 mesa-utils nvidia-prime
             else
                 $install_cmd nvidia-390 mesa-utils nvidia-prime
             fi
@@ -314,18 +322,6 @@ task_wallpaper() {
         Ubuntu)          $install_cmd tuxedo-wallpapers;;
         openSUSE*|SUSE*) $install_cmd tuxedo-one-wallpapers;;
     esac
-
-    if pkg_is_installed ubuntu-desktop; then
-        local filename="30_tuxedo-settings.gschema.override"
-        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
-        glib-compile-schemas /usr/share/glib-2.0/schemas
-    elif pkg_is_installed kubuntu-desktop; then
-        local filename="80-tuxedo.js"
-        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
-    elif pkg_is_installed xubuntu-desktop; then
-        local filename="xfce4-desktop.xml"
-        download_file ${BASEDIR}/files/${filename} ${BASE_URL}/files/${filename} /usr/share/glib-2.0/schemas/${filename}
-    fi
 }
 
 task_wallpaper_test() {
@@ -473,13 +469,15 @@ task_install_kernel() {
                 zesty)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 artful)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 bionic)  $install_cmd linux-generic-hwe-18.04 linux-image-generic-hwe-18.04 linux-headers-generic-hwe-18.04 linux-signed-generic-hwe-18.04;;
-                *)       $install_cmd linux-generic ;;
+		focal)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-firmware intel-microcode;;
+		*)       $install_cmd linux-generic ;;
             esac
             ;;
         openSUSE*|SUSE*)
             case "$lsb_release" in
                 42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
                 15.1) $install_cmd -f -r repo-kernel-tuxedo -f kernel-default kernel-devel kernel-firmware;;
+		15.2) $install_cmd -f kernel-default kernel-default-devel kernel-source kernel-firmware;;
 		*)    : ;;
             esac
             ;;
@@ -495,7 +493,8 @@ task_install_kernel_test() {
                 zesty)   pkg_is_installed linux-image-generic;;
                 artful)  pkg_is_installed linux-image-generic;;
                 bionic)  pkg_is_installed linux-image-generic;;
-                *)       pkg_is_installed linux-generic || return 1 ;;
+                focal)   pkg_is_installed linux-image-generic;;
+		*)       pkg_is_installed linux-generic || return 1 ;;
             esac
             ;;
         openSUSE*|SUSE*)
@@ -532,6 +531,27 @@ task_software() {
                 fi
 
 		if [ $fix == "micfix" ]; then
+                    $install_cmd tuxedo-micfix1
+                fi
+
+            fi
+	    if [ $lsb_release == "20.04" ]; then
+                apt-get -y remove --purge apport 
+                $install_cmd tuxedo-keyboard tuxedo-cc-wmi tuxedo-control-center tuxedo-tomte
+
+		if [ $fix == "audiofix" ]; then
+                    $install_cmd oem-audio-hda-daily-dkms
+                fi
+
+                if [ $fix == "tuxaudfix" ]; then
+                    $install_cmd tuxedo-audio-fix
+                fi
+
+                if [ $fix == "tuxrestfix" ]; then
+                    $install_cmd tuxedo-restore-audio-fix
+                fi
+
+                if [ $fix == "micfix" ]; then
                     $install_cmd tuxedo-micfix1
                 fi
 
