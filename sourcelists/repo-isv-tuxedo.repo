@@ -1,8 +1,8 @@
 [isv_TUXEDO]
-name=isv:TUXEDO (openSUSE_Leap_15.1)
+name=isv:TUXEDO (openSUSE_Leap_${lsb_release})
 enabled=1
 autorefresh=0
-baseurl=http://download.opensuse.org/repositories/isv:/TUXEDO/openSUSE_Leap_15.1/
+baseurl=http://download.opensuse.org/repositories/isv:/TUXEDO/openSUSE_Leap_${lsb_release}/
 type=rpm-md
 gpgcheck=1
-gpgkey=http://download.opensuse.org/repositories/isv:/TUXEDO/openSUSE_Leap_15.1/repodata/repomd.xml.key
+gpgkey=http://download.opensuse.org/repositories/isv:/TUXEDO/openSUSE_Leap_${lsb_release}/repodata/repomd.xml.key

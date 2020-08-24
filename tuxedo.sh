@@ -435,7 +435,11 @@ task_repository() {
 #            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_OSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_OSS_REPO} "/etc/zypp/repos.d/repo-oss.repo"
 #            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_NONOSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_NONOSS_REPO} "/etc/zypp/repos.d/repo-update-non-oss.repo"
 #            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} "/etc/zypp/repos.d/repo-update-oss.repo"
-            rpmkeys --import ${SUSE_KEYFILE_PATH}
+
+#            sed -e 's/\${lsb_release}/'${lsb_release}'/g' ${SUSE_ISV_REPO} > ${SUSE_ISV_REPO}.bak && mv ${SUSE_ISV_REPO}.bak ${UBUNTU_REPO_FILEPATH}
+#        sed -e 's/\${15.1}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_ISV_REPO} > /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak /etc/zypp/repos.d/${SUSE_ISV_REPO}
+
+	    rpmkeys --import ${SUSE_KEYFILE_PATH}
             rpmkeys --import ${NVIDIA_KEYFILE_PATH}
             rpmkeys --import ${RPM_KEYFILE_PATH}
             rpmkeys --import ${KERNEL_KEYFILE_PATH}
@@ -490,7 +494,6 @@ task_install_kernel() {
             case "$lsb_release" in
                 42.1) $install_cmd -f kernel-default-4.4.0-8.1.x86_64 kernel-default-devel-4.4.0-8.1.x86_64 kernel-firmware;;
                 15.1) $install_cmd -f -r repo-kernel-tuxedo -f kernel-default kernel-devel kernel-firmware;;
-		15.2) $install_cmd -f kernel-default kernel-default-devel kernel-source kernel-firmware;;
 		*)    : ;;
             esac
             ;;
