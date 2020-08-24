@@ -132,6 +132,9 @@ exec 3>&1 &>tuxedo.log
 if hash xterm 2>/dev/null; then
     exec xterm -geometry 150x50 -e tail -f tuxedo.log &
 fi
+if hash gnome-terminal 2>/dev/null; then
+    exec gnome-terminal -- tail -f tuxedo.log &
+fi
 
 echo "$(basename $0)"
 lsb_release -a
@@ -394,10 +397,8 @@ task_repository() {
             download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/keys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
             download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
             download_file ${BASEDIR}/sourcelists/${UBUNTU_MIRROR} ${BASE_URL}/sourcelists/${UBUNTU_MIRROR} ${UBUNTU_MIRROR_FILEPATH}
-#            download_file ${BASEDIR}/sourcelists/${UBUNTU_MIRROR} ${BASE_URL}/${UBUNTU_MIRROR} ${UBUNTU_MIRROR_FILEPATH}
-
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
-            sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_MIRROR_FILEPATH} > ${UBUNTU_MIRROR_FILEPATH}.bak && mv ${UBUNTU_MIRROR_FILEPATH}.bak ${UBUNTU_MIRROR_FILEPATH}
+            sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_MIRROR_FILEPATH} > ${UBUNTU_MIRROR_FILEPATH}.bak && mv ${UBUNTU_MIRROR_FILEPATH}.bak /etc/apt/sources.list
             
             apt-key add ${UBUNTU_KEYFILE_PATH}
             ;;
