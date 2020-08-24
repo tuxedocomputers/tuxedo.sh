@@ -393,7 +393,7 @@ task_repository() {
 
             download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/keys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
             download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
-            download_file ${BASEDIR}/sourcelists/${UBUNTU_MIRROR} ${BASE_URL}/sources.list ${UBUNTU_MIRROR_FILEPATH}
+            download_file ${BASEDIR}/sourcelists/${UBUNTU_MIRROR} ${BASE_URL}/${UBUNTU_MIRROR} ${UBUNTU_MIRROR_FILEPATH}
 
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_MIRROR_FILEPATH} > ${UBUNTU_MIRROR_FILEPATH}.bak && mv ${UBUNTU_MIRROR_FILEPATH}.bak ${UBUNTU_MIRROR_FILEPATH}
