@@ -1,0 +1,3 @@
+deb http://mirrors.tuxedocomputers.com/ubuntu/mirror/archive.ubuntu.com/ubuntu ${lsb_codename} main restricted universe multiverse
+deb http://mirrors.tuxedocomputers.com/ubuntu/mirror/security.ubuntu.com/ubuntu ${lsb_codename}-security main restricted universe multiverse
+deb http://mirrors.tuxedocomputers.com/ubuntu/mirror/archive.ubuntu.com/ubuntu ${lsb_codename}-updates main restricted universe multiverse

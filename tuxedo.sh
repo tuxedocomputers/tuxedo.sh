@@ -387,12 +387,16 @@ task_repository() {
             local UBUNTU_KEYNAME="ubuntu.pub"
             local UBUNTU_KEYFILE_PATH=${tmp}/${UBUNTU_KEYNAME}
             local UBUNTU_REPO="tuxedo-computers.list"
-            local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
+	    local UBUNTU_MIRROR="tuxedo-deb-mirrors.list"
+	    local UBUNTU_REPO_FILEPATH="/etc/apt/sources.list.d/tuxedo-computers.list"
+            local UBUNTU_MIRROR_FILEPATH="/etc/apt/sources.list.d/tuxedo-deb-mirrors.list"
 
             download_file ${BASEDIR}/keys/${UBUNTU_KEYNAME} ${BASE_URL}/keys/${UBUNTU_KEYNAME} ${UBUNTU_KEYFILE_PATH}
             download_file ${BASEDIR}/sourcelists/${UBUNTU_REPO} ${BASE_URL}/sourcelists/${UBUNTU_REPO} ${UBUNTU_REPO_FILEPATH}
+            download_file ${BASEDIR}/sourcelists/${UBUNTU_MIRROR} ${BASE_URL}/sourcelists/${UBUNTU_MIRROR} ${UBUNTU_REPO_FILEPATH}
 
             sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_REPO_FILEPATH} > ${UBUNTU_REPO_FILEPATH}.bak && mv ${UBUNTU_REPO_FILEPATH}.bak ${UBUNTU_REPO_FILEPATH}
+            sed -e 's/\${lsb_codename}/'${lsb_codename}'/g' ${UBUNTU_MIRROR_FILEPATH} > ${UBUNTU_MIRROR_FILEPATH}.bak && mv ${UBUNTU_MIRROR_FILEPATH}.bak ${UBUNTU_MIRROR_FILEPATH}
             
             apt-key add ${UBUNTU_KEYFILE_PATH}
             ;;
