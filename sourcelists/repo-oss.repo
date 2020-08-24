@@ -1,0 +1,10 @@
+[repo-oss]
+name=openSUSE-Leap-15.2-Oss
+enabled=1
+autorefresh=1
+baseurl=http://mirrors.tuxedocomputers.com/opensuse/distribution/leap/15.2/repo/oss/
+#baseurl=http://download.opensuse.org/distribution/leap/15.2/repo/oss/
+path=/
+type=rpm-md
+keeppackages=0
+

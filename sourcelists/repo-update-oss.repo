@@ -1,0 +1,10 @@
+[repo-update]
+name=openSUSE-Leap-15.2-Update-Oss
+enabled=1
+autorefresh=1
+baseurl=http://mirrors.tuxedocomputers.com/opensuse/update/leap/15.2/oss/
+#baseurl=http://download.opensuse.org/update/leap/15.2/oss/
+path=/
+type=rpm-md
+keeppackages=0
+

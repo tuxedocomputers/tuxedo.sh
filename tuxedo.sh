@@ -412,6 +412,10 @@ task_repository() {
             local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
             local SUSE_RPM_REPO="repo-rpm-tuxedo.repo"
             local SUSE_KERNEL_REPO="repo-kernel-tuxedo.repo"
+#            local SUSE_MIRROR_NONOSS_REPO="repo-non-oss.repo"
+#            local SUSE_MIRROR_OSS_REPO="repo-oss.repo"
+#            local SUSE_MIRROR_UP_NONOSS_REPO="repo-update-non-oss.repo"
+#            local SUSE_MIRROR_UP_OSS_REPO="repo-update-oss.repo"
 
             local SUSE_KEYFILE_PATH=${tmp}/${SUSE_KEYNAME}
             local NVIDIA_KEYFILE_PATH=${tmp}/${NVIDIA_KEYNAME}
@@ -427,7 +431,10 @@ task_repository() {
             download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_RPM_REPO} ${BASE_URL}/sourcelists/${SUSE_RPM_REPO} "/etc/zypp/repos.d/repo-rpm-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_KERNEL_REPO} ${BASE_URL}/sourcelists/${SUSE_KERNEL_REPO} "/etc/zypp/repos.d/repo-kernel-tuxedo.repo"
-
+#            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_NONOSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_NONOSS_REPO} "/etc/zypp/repos.d/repo-non-oss.repo"
+#            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_OSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_OSS_REPO} "/etc/zypp/repos.d/repo-oss.repo"
+#            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_NONOSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_NONOSS_REPO} "/etc/zypp/repos.d/repo-update-non-oss.repo"
+#            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} "/etc/zypp/repos.d/repo-update-oss.repo"
             rpmkeys --import ${SUSE_KEYFILE_PATH}
             rpmkeys --import ${NVIDIA_KEYFILE_PATH}
             rpmkeys --import ${RPM_KEYFILE_PATH}
