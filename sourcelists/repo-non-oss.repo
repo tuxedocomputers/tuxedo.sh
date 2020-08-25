@@ -1,9 +1,8 @@
 [repo-non-oss]
-name=openSUSE-Leap-15.2-Non-Oss
+name=openSUSE-Leap-${lsb_release}-Non-Oss
 enabled=1
 autorefresh=1
-baseurl=http://mirrors.tuxedocomputers.com/opensuse/distribution/leap/15.2/repo/non-oss/
-#baseurl=http://download.opensuse.org/distribution/leap/15.2/repo/non-oss/
+baseurl=http://mirrors.tuxedocomputers.com/opensuse/distribution/leap/${lsb_release}/repo/non-oss/
 path=/
 type=rpm-md
 keeppackages=0
