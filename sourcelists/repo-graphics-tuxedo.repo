@@ -1,0 +1,8 @@
+[repo-graphics-tuxedo]
+name=TUXEDO Computers - ${lsb_release} Graphics
+baseurl=http://graphics.tuxedocomputers.com/opensuse/${lsb_release}
+path=/
+gpgkey=http://graphics.tuxedocomputers.com/opensuse/${lsb_release}/repodata/repomd.xml.key
+gpgcheck=1
+enabled=1
+autorefresh=1

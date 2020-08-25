@@ -404,12 +404,12 @@ task_repository() {
             ;;
         openSUSE*|SUSE*)
             local SUSE_KEYNAME="suse.pub"
-            local NVIDIA_KEYNAME="nvidia.pub"
+            local GRAPHICS_KEYNAME="graphics.pub"
             local RPM_KEYNAME="rpm.pub"
             local KERNEL_KEYNAME="kernel.pub"
 
             local SUSE_ISV_REPO="repo-isv-tuxedo.repo"
-            local SUSE_NVIDIA_REPO="repo-nvidia-tuxedo.repo"
+            local SUSE_GRAPHICS_REPO="repo-graphics-tuxedo.repo"
             local SUSE_RPM_REPO="repo-rpm-tuxedo.repo"
             local SUSE_KERNEL_REPO="repo-kernel-tuxedo.repo"
             local SUSE_MIRROR_NONOSS_REPO="repo-non-oss.repo"
@@ -418,17 +418,17 @@ task_repository() {
             local SUSE_MIRROR_UP_OSS_REPO="repo-update-oss.repo"
 
             local SUSE_KEYFILE_PATH=${tmp}/${SUSE_KEYNAME}
-            local NVIDIA_KEYFILE_PATH=${tmp}/${NVIDIA_KEYNAME}
-            local NVIDIA_RPM_PATH=${tmp}/${RPM_KEYNAME}
+            local GRAPHICS_KEYFILE_PATH=${tmp}/${GRAPHICS_KEYNAME}
+            local RPM_KEYFILE_PATH=${tmp}/${RPM_KEYNAME}
             local KERNEL_KEYFILE_PATH=${tmp}/${KERNEL_KEYNAME}
 
             download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
-            download_file ${BASEDIR}/keys/${NVIDIA_KEYNAME} ${BASE_URL}/keys/${NVIDIA_KEYNAME} ${NVIDIA_KEYFILE_PATH}
+            download_file ${BASEDIR}/keys/${GRAPHICS_KEYNAME} ${BASE_URL}/keys/${GRAPHICS_KEYNAME} ${GRAPHICS_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${RPM_KEYNAME} ${BASE_URL}/keys/${RPM_KEYNAME} ${RPM_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${KERNEL_KEYNAME} ${BASE_URL}/keys/${KERNEL_KEYNAME} ${KERNEL_KEYFILE_PATH}
       
             download_file ${BASEDIR}/sourcelists/${SUSE_ISV_REPO} ${BASE_URL}/sourcelists/${SUSE_ISV_REPO} "/etc/zypp/repos.d/repo-isv-tuxedo.repo"
-            download_file ${BASEDIR}/sourcelists/${SUSE_NVIDIA_REPO} ${BASE_URL}/sourcelists/${SUSE_NVIDIA_REPO} "/etc/zypp/repos.d/repo-nvidia-tuxedo.repo"
+            download_file ${BASEDIR}/sourcelists/${SUSE_GRAPHICS_REPO} ${BASE_URL}/sourcelists/${SUSE_GRAPHICS_REPO} "/etc/zypp/repos.d/repo-graphics-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_RPM_REPO} ${BASE_URL}/sourcelists/${SUSE_RPM_REPO} "/etc/zypp/repos.d/repo-rpm-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_KERNEL_REPO} ${BASE_URL}/sourcelists/${SUSE_KERNEL_REPO} "/etc/zypp/repos.d/repo-kernel-tuxedo.repo"
             download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_NONOSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_NONOSS_REPO} "/etc/zypp/repos.d/repo-non-oss.repo"
@@ -438,14 +438,14 @@ task_repository() {
 
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_ISV_REPO} > /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak /etc/zypp/repos.d/${SUSE_ISV_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_KERNEL_REPO} > /etc/zypp/repos.d/${SUSE_KERNEL_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_KERNEL_REPO}.bak /etc/zypp/repos.d/${SUSE_KERNEL_REPO}
-            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_NVIDIA_REPO} > /etc/zypp/repos.d/${SUSE_NVIDIA_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_NVIDIA_REPO}.bak /etc/zypp/repos.d/${SUSE_NVIDIA_REPO}
+            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO} > /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}.bak /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_UP_OSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_UP_OSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_UP_OSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_UP_OSS_REPO}
 
 	    rpmkeys --import ${SUSE_KEYFILE_PATH}
-            rpmkeys --import ${NVIDIA_KEYFILE_PATH}
+            rpmkeys --import ${GRAPHICS_KEYFILE_PATH}
             rpmkeys --import ${RPM_KEYFILE_PATH}
             rpmkeys --import ${KERNEL_KEYFILE_PATH}
 	    ;;
