@@ -422,6 +422,7 @@ task_repository() {
             local RPM_KEYFILE_PATH=${tmp}/${RPM_KEYNAME}
             local KERNEL_KEYFILE_PATH=${tmp}/${KERNEL_KEYNAME}
 
+	    rm -f /etc/zypp/repos.d/*
             download_file ${BASEDIR}/keys/${SUSE_KEYNAME} ${BASE_URL}/keys/${SUSE_KEYNAME} ${SUSE_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${GRAPHICS_KEYNAME} ${BASE_URL}/keys/${GRAPHICS_KEYNAME} ${GRAPHICS_KEYFILE_PATH}
             download_file ${BASEDIR}/keys/${RPM_KEYNAME} ${BASE_URL}/keys/${RPM_KEYNAME} ${RPM_KEYFILE_PATH}
@@ -461,7 +462,7 @@ task_repository_test() {
             ;;
         openSUSE*|SUSE*)
             [ -s /etc/zypp/repos.d/repo-isv-tuxedo.repo ]    || return 1
-            [ -s /etc/zypp/repos.d/repo-nvidia-tuxedo.repo ] || return 1
+            [ -s /etc/zypp/repos.d/repo-graphics-tuxedo.repo ] || return 1
             [ -s /etc/zypp/repos.d/repo-rpm-tuxedo.repo ] || return 1
             [ -s /etc/zypp/repos.d/repo-kernel-tuxedo.repo ] || return 1
 	    ;;
