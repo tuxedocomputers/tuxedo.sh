@@ -631,7 +631,15 @@ task_software() {
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
             fi
 
-            $install_cmd  exfat-utils fuse-exfat tuxedo_keyboard realtek-clevo-pin-fix
+	    if [ $fix == "tuxrestfix" ]; then
+                    $install_cmd tuxedo-restore-audio-fix
+            fi
+
+            if [ $fix == "micfix" ]; then
+                    $install_cmd tuxedo-micfix1
+            fi
+
+            $install_cmd  exfat-utils fuse-exfat realtek-clevo-pin-fix tuxedo-tomte tuxedo-keyboard edid-decode read-edid tuxedo-cc-wmi tuxedo-control-center
             echo "options tuxedo_keyboard mode=0 color_left=0xFFFFFF color_center=0xFFFFFF color_right=0xFFFFFF color_extra=0xFFFFFF brightness=200" > /etc/modprobe.d/tuxedo_keyboard.conf
             systemctl enable dkms
             ;;
