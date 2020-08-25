@@ -19,8 +19,8 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Version: 3.43.2
-# Date:	2019-10-09
+# Version: 3.43.3
+# Date:	2020-08-25
 
 cd $(dirname $0) || return 0
 SCRIPTPATH=$(readlink -f "$0")
@@ -438,8 +438,9 @@ task_repository() {
             download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} "/etc/zypp/repos.d/repo-update-oss.repo"
 
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_ISV_REPO} > /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak /etc/zypp/repos.d/${SUSE_ISV_REPO}
+            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_RPM_REPO} > /etc/zypp/repos.d/${SUSE_RPM_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_RPM_REPO}.bak /etc/zypp/repos.d/${SUSE_RPM_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_KERNEL_REPO} > /etc/zypp/repos.d/${SUSE_KERNEL_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_KERNEL_REPO}.bak /etc/zypp/repos.d/${SUSE_KERNEL_REPO}
-            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO} > /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}.bak /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}
+	    sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO} > /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}.bak /etc/zypp/repos.d/${SUSE_GRAPHICS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_NONOSS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_OSS_REPO}
             sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO} > /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO}.bak /etc/zypp/repos.d/${SUSE_MIRROR_UP_NONOSS_REPO}
