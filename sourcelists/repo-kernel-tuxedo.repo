@@ -1,8 +1,8 @@
 [repo-kernel-tuxedo]
-name=TUXEDO Computers -Kernel - 15.1 rpm
-baseurl=http://kernel.tuxedocomputers.com/opensuse/15.1
+name=TUXEDO Computers -Kernel - ${lsb_release} rpm
+baseurl=http://kernel.tuxedocomputers.com/opensuse/${lsb_release}
 path=/
-gpgkey=http://kernel.tuxedocomputers.com/opensuse/15.1/repodata/repomd.xml.key
+gpgkey=http://kernel.tuxedocomputers.com/opensuse/${lsb_release}/repodata/repomd.xml.key
 priority=75
 gpgcheck=1
 enabled=1

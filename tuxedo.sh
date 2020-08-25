@@ -436,9 +436,9 @@ task_repository() {
 #            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_NONOSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_NONOSS_REPO} "/etc/zypp/repos.d/repo-update-non-oss.repo"
 #            download_file ${BASEDIR}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} ${BASE_URL}/sourcelists/${SUSE_MIRROR_UP_OSS_REPO} "/etc/zypp/repos.d/repo-update-oss.repo"
 
-            sed -e 's/${lsb_release}/'${lsb_release}'/g' ${SUSE_ISV_REPO} > ${SUSE_ISV_REPO}.bak 
-#	    && mv ${SUSE_ISV_REPO}.bak ${UBUNTU_REPO_FILEPATH}
-#        sed -e 's/\${15.1}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_ISV_REPO} > /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak /etc/zypp/repos.d/${SUSE_ISV_REPO}
+            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_ISV_REPO} > /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_ISV_REPO}.bak /etc/zypp/repos.d/${SUSE_ISV_REPO}
+            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_KERNEL_REPO} > /etc/zypp/repos.d/${SUSE_KERNEL_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_KERNEL_REPO}.bak /etc/zypp/repos.d/${SUSE_KERNEL_REPO}
+            sed -e 's/\${lsb_release}/'${lsb_release}'/g' /etc/zypp/repos.d/${SUSE_NVIDIA_REPO} > /etc/zypp/repos.d/${SUSE_NVIDIA_REPO}.bak && mv /etc/zypp/repos.d/${SUSE_NVIDIA_REPO}.bak /etc/zypp/repos.d/${SUSE_NVIDIA_REPO}
 
 	    rpmkeys --import ${SUSE_KEYFILE_PATH}
             rpmkeys --import ${NVIDIA_KEYFILE_PATH}
