@@ -108,6 +108,7 @@ case $board in
     NL40_50GU) fix="micfix";;
     NH5xAx) fix="micfix";;
     NJ50_NJ70CU) fix="micfix";;
+    PB71D) fix="micfix";;
     *) : ;;
 esac
 
