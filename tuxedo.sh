@@ -585,15 +585,15 @@ task_software() {
                 echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
 	    fi
 
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
-            wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
-            cp iwlwifi*.ucode /lib/firmware/
-            rm -rf iwlwifi-*
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7260-17.ucode
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265-17.ucode
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-7265D-21.ucode
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-19.ucode
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-20.ucode
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-21.ucode
+            #wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-8000C-22.ucode
+            #cp iwlwifi*.ucode /lib/firmware/
+            #rm -rf iwlwifi-*
 
             if has_kabylake_cpu;then
             wget https://www.tuxedocomputers.com/support/i915/kbl_dmc_ver1_01.bin
