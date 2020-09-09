@@ -108,6 +108,7 @@ case $board in
     NL40_50GU) fix="micfix";;
     NH5xAx) fix="micfix";;
     NJ50_NJ70CU) fix="micfix";;
+    PB50_70D*) fix="micfix";;
     *) : ;;
 esac
 
@@ -515,7 +516,7 @@ task_install_kernel_test() {
                 yakkety) pkg_is_installed linux-image-4.11.8-041108-generic;;
                 zesty)   pkg_is_installed linux-image-generic;;
                 artful)  pkg_is_installed linux-image-generic;;
-                bionic)  pkg_is_installed linux-image-generic;;
+                bionic)  pkg_is_installed linux-image-generic-hwe-18.04;;
                 focal)   pkg_is_installed linux-image-generic;;
 		*)       pkg_is_installed linux-generic || return 1 ;;
             esac
