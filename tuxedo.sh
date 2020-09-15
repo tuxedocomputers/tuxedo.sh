@@ -28,8 +28,14 @@ BASEDIR=$(dirname "$SCRIPTPATH")
 
 BASE_URL="https://raw.githubusercontent.com/tuxedocomputers/tuxedo.sh/master"
 
+if [ "$EUID" -ne 0 ]; then
+    echo "tuxedo.sh muss mit root Rechten ausgeführt werden! / tuxedo.sh must be executed with root privileges!"
+    exec sudo su -c "/bin/bash '$(basename $0)'"
+fi
+
 if [ -f /var/log/tuxedo-install.log ]; then
-exit 0
+    echo "Sie besitzen eine TUXEDO WebFAI Installation. Es gibt nichts zu tun. / You have a TUXEDO WebFAI installation. There is nothing to do."
+    exit 0
 fi
 
 # additional packages that should be installed
@@ -122,11 +128,6 @@ case $board in
 	;;
     *) : ;;
 esac
-
-if [ "$EUID" -ne 0 ]; then
-    echo "You aren't 'root', but '$(whoami)'. Aren't you?!"
-    exec sudo su -c "/bin/bash '$(basename $0)'"
-fi
 
 exec 3>&1 &>tuxedo.log
 

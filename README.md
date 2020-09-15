@@ -1,8 +1,27 @@
 # tuxedo.sh
 
-Anpassungen nach der Installation / Adjustments after installation
+Adjustments after installation / Anpassungen nach der Installation
 
-_(English version below)_
+## Adjustments after installation
+
+We have deliberately decided against offering TUXEDO installation images. With such images you would always be “dependent” on us, which would contradict the Linux idea. The maintenance of such images would also require a significant effort, and they could never be as up-to-date and complete as the actual servers of the Linux distributions. So we rather offer installation support, manuals, and driver packages. This way you can adjust you individual installation the same way we would.
+
+Main tasks of the script:
+* Installation of drivers
+* Configuration of the special keys
+* Deactivation of shopping proposals in the Ubuntu search
+* Configuration of NVIDIA graphics card, if applicable
+* Installation of tlp to save energy
+
+It checks if tasks have already been done, and makes updates if necessary. It causes no problems to run the script several times. 
+
+**If you already have an TUXEDO WebFAI installation you don't have to run this script!**  
+**Please use the script only for TUXEDO _laptops_ with the distributions we offer!**
+
+For other distributions you can use the driver only as .deb or .rpm package (e.g. for Debian on a TUXEDO book). For some distributions, there are third-party packages of our drivers and software packages.
+
+The script also adds our repositorys with the latest version of our own drivers and other useful packages. This way everything can be kept up to date automatically.
+
 
 ## Anpassungen nach der Installation
 
@@ -21,29 +40,12 @@ Das Script
 * bei Geräten mit NVIDIA Grafik die entspr. Treiber 
 sowie 
 * Umschaltelinks
-* laptop-mode-tools zur besseren Energiesteuerung uvm. durch. 
+* tlp zur besseren Energiesteuerung uvm. durch. 
 Es prüft auch, ob die Treiber und Konfigurationen bereits installiert sind bzw. ausgeführt wurden und korrigiert diese gegebenenfalls. Sie können das Script gefahrlos auch mehrfach ausführen!
 
+**Wenn Sie bereits eine TUXEDO WebFAI-Installation haben, müssen Sie dieses Skript nicht ausführen!**  
 **Verwenden Sie das Script bitte nur bei TUXEDO _Notebooks_ mit den von uns angebotenen Distributionen!**
-Für andere Distris kann z.B. nur der Treiber als .deb oder .rpm Paket verwendet werden (z.B. bei Debian auf einem Tuxedo Book).
 
-Das Script fügt auch unser Repository mit der aktuellen Version unseres hauseigenen Treibers (Tuxedo-wmi) sowie weitere nützliche Pakete hinzu. So kann alles automatisch aktuell gehalten werden.
+Für andere Distris kann z.B. nur der Treiber als .deb oder .rpm Paket verwendet werden (z.B. bei Debian auf einem TUXEDO Book). Für einige Distributionen gibt es durch Dritte geflegte Pakete unserer Treiber und Softwarepakete.
 
-
-## Adjustments after installation
-
-We have deliberately decided against offering TUXEDO installation images. With such images you would always be “dependent” on us, which would contradict the Linux idea. The maintenance of such images would also require a significant effort, and they could never be as up-to-date and complete as the actual servers of the Linux distributions. So we rather offer installation support, manuals, and driver packages. This way you can adjust you individual installation the same way we would.
-
-Main tasks of the script:
-* Installation of drivers
-* Configuration of the special keys
-* Deactivation of shopping proposals in the Ubuntu search
-* Configuration of NVIDIA graphics card, if applicable
-* Installation of laptop-mode-tools to save energy
-
-It checks if tasks have already been done, and makes updates if necessary. It causes no problems to run the script several times. 
-
-**Please use the script only for TUXEDO _laptops_ with the distributions we offer!**
-For other distributions you can use the driver only as .deb or .rpm package (e.g. for Debian on a Tuxedo book).
-
-The script also adds our repository with the latest version of our own driver (Tuxedo-wmi) and other useful packages. This way everything can be kept up to date automatically.
+Das Script fügt auch unsere Repositorys mit der aktuellen Version unserer hauseigenen Treiber sowie weitere nützliche Pakete hinzu. So kann alles automatisch aktuell gehalten werden.
