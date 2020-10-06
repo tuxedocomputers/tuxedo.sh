@@ -119,6 +119,16 @@ case $board in
 esac
 
 case $board in
+    POLARIS1501A1650TI) fix="amdgpu";;
+    POLARIS1501A2060) fix="amdgpu";;
+    POLARIS1701A1650TI) fix="amdgpu";;
+    POLARIS1701A2060) fix="amdgpu";;
+    PULSE1401) fix="amdgpu";;
+    PULSE1501) fix="amdgpu";;
+    *) : ;;
+esac
+
+case $board in
     P95_96_97Ex_Rx|PB50_70EF_ED_EC|PB50_70RF_RD_RC|P9XXRC)
         grubakt="NOGRUB"
         tpfix="TPFIX"
@@ -495,8 +505,8 @@ task_install_kernel() {
                 zesty)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 artful)  $install_cmd linux-generic linux-image-generic linux-headers-generic linux-tools-generic;;
                 bionic)  $install_cmd linux-generic-hwe-18.04 linux-image-generic-hwe-18.04 linux-headers-generic-hwe-18.04 linux-signed-generic-hwe-18.04;;
-		focal)   $install_cmd linux-generic linux-image-generic linux-headers-generic linux-firmware intel-microcode;;
-		*)       $install_cmd linux-generic ;;
+		focal)   $install_cmd linux-oem-20.04 linux-firmware intel-microcode;;
+		*)       $install_cmd linux-generic;;
             esac
             ;;
         openSUSE*|SUSE*)
@@ -580,6 +590,9 @@ task_software() {
                     $install_cmd tuxedo-micfix1
                 fi
 
+		if [ $fix == "amdgpu" ]; then
+                    $install_cmd amdgpu-dkms
+                fi
             fi
 
             if has_threeg; then
