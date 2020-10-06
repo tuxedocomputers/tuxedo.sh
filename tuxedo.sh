@@ -19,8 +19,8 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Version: 3.43.3
-# Date:	2020-08-25
+# Version: 3.43.4
+# Date:	2020-10-06
 
 cd $(dirname $0) || return 0
 SCRIPTPATH=$(readlink -f "$0")
@@ -125,6 +125,11 @@ case $board in
     POLARIS1701A2060) fix="amdgpu";;
     PULSE1401) fix="amdgpu";;
     PULSE1501) fix="amdgpu";;
+    *) : ;;
+esac
+
+case $board in
+    X170SM) fix="tuxkeyite";;
     *) : ;;
 esac
 
@@ -528,7 +533,7 @@ task_install_kernel_test() {
                 zesty)   pkg_is_installed linux-image-generic;;
                 artful)  pkg_is_installed linux-image-generic;;
                 bionic)  pkg_is_installed linux-image-generic-hwe-18.04;;
-                focal)   pkg_is_installed linux-image-generic;;
+                focal)   pkg_is_installed linux-oem-20.04;;
 		*)       pkg_is_installed linux-generic || return 1 ;;
             esac
             ;;
@@ -569,6 +574,9 @@ task_software() {
                     $install_cmd tuxedo-micfix1
                 fi
 
+		if [ $fix == "tuxkeyite" ]; then
+                    $install_cmd tuxedo-keyboard-ite
+                fi
             fi
 	    if [ $lsb_release == "20.04" ]; then
                 apt-get -y remove --purge apport 
