@@ -156,8 +156,7 @@ exec 3>&1 &>tuxedo.log
 
 if hash xterm 2>/dev/null; then
     exec xterm -geometry 150x50 -e tail -f tuxedo.log &
-fi
-if hash gnome-terminal 2>/dev/null; then
+elif hash gnome-terminal 2>/dev/null; then
     exec gnome-terminal -- tail -f tuxedo.log &
 fi
 
