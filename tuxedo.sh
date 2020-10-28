@@ -54,8 +54,16 @@ lsb_codename="$(lsb_release -sc)"  # e.g. 'raring', 'olivia', 'Dartmouth'
 apt_opts='-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew --fix-missing'
 zypper_opts='-n'
 
+vendor="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_vendor" | tr ' ,/-' '_')"
 product="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/product_name" | tr ' ,/-' '_')" # e.g. 'U931'
 board="$(sed -e 's/^\s*//g' -e 's/\s*$//g' "/sys/devices/virtual/dmi/id/board_name" | tr ' ,/-' '_')"
+
+case $vendor in
+	TUXEDO) echo "nix" >/dev/null;;
+	TUXEDO*) echo "nix" >/dev/null;;
+	Type2___Board_Vendor_Name1) lspci -nd '8086:' | grep -q '8086:24f3' && echo "It seems you do not use a TUXEDO device. If this is a mistake, please contact us" && exit 0;;
+	*) echo "It seems you do not use a TUXEDO device. If this is a mistake, please contact us" && exit 0;;
+esac
 
 case $product in
     U931|U953|INFINITYBOOK13V2|InfinityBook13V3|InfinityBook14v1|InfinityBook15*|Skylake_Platform) 
