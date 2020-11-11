@@ -555,7 +555,7 @@ task_install_kernel_test() {
 task_software() {
     case "$lsb_dist_id" in
         Ubuntu)
-            $install_cmd tlp xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils 
+            $install_cmd gcc tlp xbacklight exfat-fuse exfat-utils gstreamer1.0-libav libgtkglext1 mesa-utils
 
             if [ $lsb_release == "16.04" ]; then
                 wget https://www.tuxedocomputers.com/support/iwlwifi/iwlwifi-3160-17.ucode
@@ -656,6 +656,8 @@ task_software() {
             fi
             ;;
         openSUSE*|SUSE*)
+            $install_cmd gcc
+            
             if [ $product == "P65_P67RGRERA" ]; then
                 $install_cmd r8168-dkms-8.040.00-10.57.noarch
                 echo "blacklist r8169" > "/etc/modprobe.d/99-local.conf"
