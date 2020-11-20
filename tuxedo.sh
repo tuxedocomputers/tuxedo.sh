@@ -123,6 +123,7 @@ case $board in
     NH5xAx) fix="micfix";;
     NJ50_NJ70CU) fix="micfix";;
     PB50_70D*) fix="micfix";;
+    AURA1501) fix="micfix";;
     *) : ;;
 esac
 
