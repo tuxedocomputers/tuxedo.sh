@@ -134,7 +134,6 @@ case $board in
     POLARIS1701A2060) fix="amdgpu";;
     PULSE1401) fix="amdgpu";;
     PULSE1501) fix="amdgpu";;
-    AURA1501) fix="amdgpu";;
     *) : ;;
 esac
 
