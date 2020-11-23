@@ -124,6 +124,8 @@ case $board in
     NJ50_NJ70CU) fix="micfix";;
     PB50_70D*) fix="micfix";;
     AURA1501) fix="micfix";;
+    N150CU) fix="micfix";;
+    L14xMU) fix="micfix";;
     *) : ;;
 esac
 
