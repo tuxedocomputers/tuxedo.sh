@@ -614,7 +614,7 @@ task_software() {
             fi
 
             if has_threeg; then
-                echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawai-me936.conf"
+                echo "options usbserial vendor=0x12d1 product=0x15bb" > "/etc/modprobe.d/huawei-me936.conf"
                 echo 'ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="12d1", ATTR{idProduct}=="15bb", ATTR{bNumConfigurations}=="3", ATTR{bConfigurationValue}!="3" ATTR{bConfigurationValue}="3"' > "/lib/udev/rules.d/77-mm-huawei-configuration.rules"
 	    fi
 
