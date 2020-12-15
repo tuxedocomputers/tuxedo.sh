@@ -567,7 +567,7 @@ task_software() {
 
             if [ $lsb_release == "18.04" ]; then
                 apt-get -y remove --purge ubuntu-web-launchers apport ureadahead app-install-data-partner kwalletmanager
-                $install_cmd tuxedo-keyboard tuxedo-cc-wmi tuxedo-control-center tuxedo-tomte 
+                $install_cmd tuxedo-keyboard tuxedo-control-center tuxedo-tomte 
                 if [ $fix == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
                 fi
@@ -590,7 +590,7 @@ task_software() {
             fi
 	    if [ $lsb_release == "20.04" ]; then
                 apt-get -y remove --purge apport 
-                $install_cmd tuxedo-keyboard tuxedo-cc-wmi tuxedo-control-center tuxedo-tomte
+                $install_cmd tuxedo-keyboard tuxedo-control-center tuxedo-tomte
 
 		if [ $fix == "audiofix" ]; then
                     $install_cmd oem-audio-hda-daily-dkms
@@ -674,7 +674,7 @@ task_software() {
                     $install_cmd tuxedo-micfix1
             fi
 
-            $install_cmd  exfat-utils fuse-exfat realtek-clevo-pin-fix tuxedo-tomte tuxedo-keyboard edid-decode read-edid tuxedo-cc-wmi tuxedo-control-center
+            $install_cmd  exfat-utils fuse-exfat realtek-clevo-pin-fix tuxedo-tomte tuxedo-keyboard edid-decode read-edid tuxedo-control-center
             echo "options tuxedo_keyboard mode=0 color_left=0xFFFFFF color_center=0xFFFFFF color_right=0xFFFFFF color_extra=0xFFFFFF brightness=200" > /etc/modprobe.d/tuxedo_keyboard.conf
             systemctl enable dkms
             ;;
