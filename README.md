@@ -2,6 +2,12 @@
 
 Adjustments after installation / Anpassungen nach der Installation
 
+:bangbang: :us: | 'tuxedo.sh' becomes TUXEDO Tomte! <br />We are currently working on a new customization method that will simplify system setup for our customers in the future. You will find more information about this here soon!
+:---: | :---
+
+:bangbang: :de: | Aus 'tuxedo.sh' wird TUXEDO Tomte! <br />Wir arbeiten aktuell an einer neuen Anpassungsmethode, die die Systemeinrichtung für unsere Kunden in Zukunft vereinfachen wird. Weitere Informationen dazu finden Sie hier in Kürze!
+:---: | :---
+
 ## Adjustments after installation
 
 We have deliberately decided against offering TUXEDO installation images. With such images you would always be “dependent” on us, which would contradict the Linux idea. The maintenance of such images would also require a significant effort, and they could never be as up-to-date and complete as the actual servers of the Linux distributions. So we rather offer installation support, manuals, and driver packages. This way you can adjust you individual installation the same way we would.
