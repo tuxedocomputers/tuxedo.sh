@@ -22,6 +22,43 @@
 # Version: 3.43.4
 # Date:	2020-10-06
 
+task_check_unofficial_distribution(){
+    case "$lsb_dist_id" in 
+    Ubuntu)
+        return 1
+    esac
+    case "$lsb_dist_id" in openSUSE*|SUSE*)
+        return 1
+    esac
+    #LinuxMint
+    case "$lsb_dist_id" in Linuxmint)
+            case "$lsb_release" in 
+            20)
+                case "$lsb_codename" in
+                ulyana)
+                    lsb_dist_id='Ubuntu'
+                    lsb_release="20.04"
+                    lsb_codename='focal'
+                    return 0
+                    esac
+            esac
+    esac
+    case "$lsb_dist_id" in LinuxMint)
+        case "$lsb_release" in 
+            19|19.1|19.2|19.3)
+                 case "$lsb_codename" in
+                tara|tessa|tina|tricia)
+                    lsb_dist_id='Ubuntu'
+                    lsb_release="18.04"
+                    lsb_codename='bionic'
+                    return 0
+                     esac
+            esac
+    esac
+    
+    return 1
+}
+
 cd $(dirname $0) || return 0
 SCRIPTPATH=$(readlink -f "$0")
 BASEDIR=$(dirname "$SCRIPTPATH")
@@ -50,6 +87,17 @@ xset -dpms
 lsb_dist_id="$(lsb_release -si)"   # e.g. 'Ubuntu', 'LinuxMint', 'openSUSE project'
 lsb_release="$(lsb_release -sr)"   # e.g. '13.04', '15', '12.3'
 lsb_codename="$(lsb_release -sc)"  # e.g. 'raring', 'olivia', 'Dartmouth'
+if task_check_unofficial_distribution; then
+    # Divide by two so the dialogs take up half of the screen, which looks nice.
+    r=$(( rows / 2 ))
+    c=$(( columns / 2 ))
+    # Unless the screen is tiny
+    r=$(( r < 20 ? 20 : r ))
+    c=$(( c < 70 ? 70 : c ))
+    if ! whiptail --yesno  --backtitle "Not official supported operation-system detected" --title "Warning" "\\n\\n Not official supported operation-system detected.\\n\\n Using settings for: $lsb_dist_id $lsb_release $lsb_codename\\n\\n Please make sure that this is correct.\\n\\n Do you want to continue?" "${r}" "${c}"; then
+         exit 0
+    fi
+fi
 
 apt_opts='-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew --fix-missing'
 zypper_opts='-n'
